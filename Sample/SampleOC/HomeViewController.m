@@ -22,7 +22,7 @@
 @property (nonatomic, strong) NSLayoutConstraint *playerContainerViewCenterLayoutConstraint;
 @property (nonatomic, strong) OTKTransitionCoordinator *orientationTransitionCoordinator;
 @property (nonatomic, strong) LandscapeViewController *landscapeViewController;
-@property (nonatomic, copy) void(^pendingExitFullscreenTask)(void);
+@property (nonatomic, copy) void (^pendingExitFullscreenTask)(void);
 @end
 
 @implementation HomeViewController
@@ -46,14 +46,14 @@
     UIButtonConfiguration *positionButtonConfiguration = [UIButtonConfiguration filledButtonConfiguration];
     positionButtonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(5, 10, 5, 10);
     positionButtonConfiguration.cornerStyle = UIButtonConfigurationCornerStyleCapsule;
-    positionButtonConfiguration.attributedTitle = [[NSAttributedString alloc] initWithString:@"顶部" attributes:@{ NSFontAttributeName: [UIFont systemFontOfSize:18 weight:UIFontWeightMedium] }];
+    positionButtonConfiguration.attributedTitle = [[NSAttributedString alloc] initWithString:@"顶部" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:18 weight:UIFontWeightMedium]}];
     _positionButton = [UIButton buttonWithConfiguration:positionButtonConfiguration primaryAction:nil];
     [_positionButton addTarget:self action:@selector(positionButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
 
     UIButtonConfiguration *landscapeButtonConfiguration = [UIButtonConfiguration filledButtonConfiguration];
     landscapeButtonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(5, 10, 5, 10);
     landscapeButtonConfiguration.cornerStyle = UIButtonConfigurationCornerStyleCapsule;
-    landscapeButtonConfiguration.attributedTitle = [[NSAttributedString alloc] initWithString:@"全屏" attributes:@{ NSFontAttributeName: [UIFont systemFontOfSize:18 weight:UIFontWeightMedium] }];
+    landscapeButtonConfiguration.attributedTitle = [[NSAttributedString alloc] initWithString:@"全屏" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:18 weight:UIFontWeightMedium]}];
     _landscapeButton = [UIButton buttonWithConfiguration:landscapeButtonConfiguration primaryAction:nil];
     _landscapeButton.translatesAutoresizingMaskIntoConstraints = NO;
     [_landscapeButton addTarget:self action:@selector(landscapeButtonTapped) forControlEvents:UIControlEventTouchUpInside];
@@ -80,8 +80,8 @@
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
 
-    if (_playerView.superview == _playerContainerView) {
-        _playerView.frame = _playerContainerView.bounds;
+    if (self.playerView.superview == self.playerContainerView) {
+        self.playerView.frame = self.playerContainerView.bounds;
     }
 }
 
@@ -92,15 +92,15 @@
     configuration.contentInsets = NSDirectionalEdgeInsetsMake(5, 10, 5, 10);
     configuration.cornerStyle = UIButtonConfigurationCornerStyleCapsule;
 
-    _playerContainerViewCenterLayoutConstraint.active = NO;
-    _playerContainerViewTopLayoutConstraint.active = NO;
+    self.playerContainerViewCenterLayoutConstraint.active = NO;
+    self.playerContainerViewTopLayoutConstraint.active = NO;
 
     if (sender.selected) {
-        configuration.attributedTitle = [[NSAttributedString alloc] initWithString:@"中心" attributes:@{ NSFontAttributeName: [UIFont systemFontOfSize:18 weight:UIFontWeightMedium] }];
-        _playerContainerViewTopLayoutConstraint.active = YES;
+        configuration.attributedTitle = [[NSAttributedString alloc] initWithString:@"中心" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:18 weight:UIFontWeightMedium]}];
+        self.playerContainerViewTopLayoutConstraint.active = YES;
     } else {
-        configuration.attributedTitle = [[NSAttributedString alloc] initWithString:@"顶部" attributes:@{ NSFontAttributeName: [UIFont systemFontOfSize:18 weight:UIFontWeightMedium] }];
-        _playerContainerViewCenterLayoutConstraint.active = YES;
+        configuration.attributedTitle = [[NSAttributedString alloc] initWithString:@"顶部" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:18 weight:UIFontWeightMedium]}];
+        self.playerContainerViewCenterLayoutConstraint.active = YES;
     }
     sender.configuration = configuration;
 
@@ -110,12 +110,12 @@
 }
 
 - (void)landscapeButtonTapped {
-    if (_landscapeViewController != nil) {
+    if (self.landscapeViewController != nil) {
         return;
     }
 
     LandscapeViewController *landscapeViewController = [LandscapeViewController new];
-    landscapeViewController.transitionContentView = _playerView;
+    landscapeViewController.transitionContentView = self.playerView;
 
     __weak typeof(self) weakSelf = self;
     landscapeViewController.didTapUserInfoHandler = ^(LandscapeViewController *viewController) {
@@ -128,8 +128,8 @@
     OTKDefaultTransitionAnimationProvider *animationProvider = [[OTKDefaultTransitionAnimationProvider alloc] initWithDuration:0.25];
     OTKTransitionCoordinator *transitionCoordinator = [[OTKTransitionCoordinator alloc] initFromContextProvider:self toContextProvider:landscapeViewController fromInterfaceOrientation:UIInterfaceOrientationPortrait toInterfaceOrientation:UIInterfaceOrientationLandscapeRight animationProvider:animationProvider];
 
-    _landscapeViewController = landscapeViewController;
-    _orientationTransitionCoordinator = transitionCoordinator;
+    self.landscapeViewController = landscapeViewController;
+    self.orientationTransitionCoordinator = transitionCoordinator;
 
     landscapeViewController.modalPresentationStyle = UIModalPresentationFullScreen;
     landscapeViewController.transitioningDelegate = transitionCoordinator;
@@ -146,7 +146,7 @@
 }
 
 - (CGRect)transitionFromContextProviderTransitionFrameIn:(UIView *)containerView {
-    return [containerView convertRect:_playerContainerView.bounds fromView:_playerContainerView];
+    return [containerView convertRect:self.playerContainerView.bounds fromView:self.playerContainerView];
 }
 
 - (void)transitionFromContextProviderPrepareTransitionView:(UIView *)transitionView {
@@ -154,25 +154,25 @@
 }
 
 - (void)transitionFromContextProviderFinishTransitionView {
-    [self movePlayerViewToContainerView:_playerContainerView];
+    [self movePlayerViewToContainerView:self.playerContainerView];
 }
 
 - (void)transitionFromContextProviderTransitionDidExitTo:(id<OTKTransitionToContextProvider>)contextProvider {
-    _orientationTransitionCoordinator = nil;
-    _landscapeViewController = nil;
+    self.orientationTransitionCoordinator = nil;
+    self.landscapeViewController = nil;
 
-    if (_pendingExitFullscreenTask != nil) {
-        _pendingExitFullscreenTask();
-        _pendingExitFullscreenTask = nil;
+    if (self.pendingExitFullscreenTask != nil) {
+        self.pendingExitFullscreenTask();
+        self.pendingExitFullscreenTask = nil;
     }
 }
 
 - (void)movePlayerViewToContainerView:(UIView *)containerView {
-    [_playerView removeFromSuperview];
-    _playerView.transform = CGAffineTransformIdentity;
-    _playerView.frame = containerView.bounds;
-    _playerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [containerView addSubview:_playerView];
+    [self.playerView removeFromSuperview];
+    self.playerView.transform = CGAffineTransformIdentity;
+    self.playerView.frame = containerView.bounds;
+    self.playerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [containerView addSubview:self.playerView];
 }
 
 @end

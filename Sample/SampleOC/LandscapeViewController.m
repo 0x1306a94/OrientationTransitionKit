@@ -85,8 +85,8 @@
 }
 
 - (void)userInfoButtonTapped {
-    if (_didTapUserInfoHandler != nil) {
-        _didTapUserInfoHandler(self);
+    if (self.didTapUserInfoHandler != nil) {
+        self.didTapUserInfoHandler(self);
     }
 }
 
@@ -95,7 +95,7 @@
 }
 
 - (CGRect)transitionToContextProviderTransitionFrameIn:(UIView *)containerView {
-    return [containerView convertRect:_playerContainerView.bounds fromView:_playerContainerView];
+    return [containerView convertRect:self.playerContainerView.bounds fromView:self.playerContainerView];
 }
 
 - (void)transitionToContextProviderPrepareTransitionView:(UIView *)transitionView {
@@ -103,11 +103,11 @@
 }
 
 - (void)transitionToContextProviderFinishTransitionView {
-    [self moveTransitionContentToContainerView:_playerContainerView];
+    [self moveTransitionContentToContainerView:self.playerContainerView];
 }
 
 - (void)moveTransitionContentToContainerView:(UIView *)containerView {
-    UIView *transitionContentView = _transitionContentView;
+    UIView *transitionContentView = self.transitionContentView;
     if (transitionContentView == nil) {
         return;
     }

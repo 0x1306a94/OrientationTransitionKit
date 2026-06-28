@@ -1,0 +1,16 @@
+//
+//  Config.xcconfig
+//  Sample
+//
+//  Created by KK on 2026/6/28.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+
+PRODUCT_BUNDLE_IDENTIFIER = com.0x1306a94.OrientationTransitionKitSample
+DEVELOPMENT_TEAM =
+CODE_SIGN_IDENTITY =
+PROVISIONING_PROFILE_SPECIFIER =
+
+#include? "Developer.xcconfig"

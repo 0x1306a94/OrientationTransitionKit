@@ -82,3 +82,18 @@ xcodebuild -project Sample/Sample.xcodeproj -scheme SampleOC -destination 'platf
 ## 更多文档
 
 - [iOS 16+ 方向监听说明](Docs/iOS16OrientationObservation.md)
+
+## Demo Preview
+- iOS 15.0
+  
+https://github.com/user-attachments/assets/8f35c2d7-1be7-4027-b122-14819e9bbd20
+
+- iOS 18.5
+  
+https://github.com/user-attachments/assets/f09f3883-a496-40f8-9624-686111af55eb
+
+- iOS 26.5.1
+
+https://github.com/user-attachments/assets/5c77585c-c665-4455-96f4-f9c7c3ddd9da
+
+

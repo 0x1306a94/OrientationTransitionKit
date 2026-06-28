@@ -8,10 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		4B2B4DF82FF0D1BE006CCFD2 /* OrientationTransitionKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4B2B4DF72FF0D1BE006CCFD2 /* OrientationTransitionKit */; };
+		4B564FBB2FF1266D00D65130 /* OrientationTransitionKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4B564FBA2FF1266D00D65130 /* OrientationTransitionKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		4B2B4DDE2FF0D190006CCFD2 /* Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4B564F122FF124EA00D65130 /* SampleOC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SampleOC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -21,6 +23,13 @@
 				Info.plist,
 			);
 			target = 4B2B4DDD2FF0D190006CCFD2 /* Sample */;
+		};
+		4B564F282FF124EB00D65130 /* Exceptions for "SampleOC" folder in "SampleOC" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4B564F112FF124EA00D65130 /* SampleOC */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -38,6 +47,14 @@
 			path = Configuration;
 			sourceTree = "<group>";
 		};
+		4B564F132FF124EA00D65130 /* SampleOC */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4B564F282FF124EB00D65130 /* Exceptions for "SampleOC" folder in "SampleOC" target */,
+			);
+			path = SampleOC;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,6 +66,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4B564F0F2FF124EA00D65130 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B564FBB2FF1266D00D65130 /* OrientationTransitionKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -57,6 +82,8 @@
 			children = (
 				4B2B4E342FF0D36A006CCFD2 /* Configuration */,
 				4B2B4DE02FF0D190006CCFD2 /* Sample */,
+				4B564F132FF124EA00D65130 /* SampleOC */,
+				4B564FB92FF1266D00D65130 /* Frameworks */,
 				4B2B4DDF2FF0D190006CCFD2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -65,8 +92,16 @@
 			isa = PBXGroup;
 			children = (
 				4B2B4DDE2FF0D190006CCFD2 /* Sample.app */,
+				4B564F122FF124EA00D65130 /* SampleOC.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		4B564FB92FF1266D00D65130 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -95,6 +130,29 @@
 			productReference = 4B2B4DDE2FF0D190006CCFD2 /* Sample.app */;
 			productType = "com.apple.product-type.application";
 		};
+		4B564F112FF124EA00D65130 /* SampleOC */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4B564F292FF124EB00D65130 /* Build configuration list for PBXNativeTarget "SampleOC" */;
+			buildPhases = (
+				4B564F0E2FF124EA00D65130 /* Sources */,
+				4B564F0F2FF124EA00D65130 /* Frameworks */,
+				4B564F102FF124EA00D65130 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4B564F132FF124EA00D65130 /* SampleOC */,
+			);
+			name = SampleOC;
+			packageProductDependencies = (
+				4B564FBA2FF1266D00D65130 /* OrientationTransitionKit */,
+			);
+			productName = SampleOC;
+			productReference = 4B564F122FF124EA00D65130 /* SampleOC.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -106,6 +164,9 @@
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					4B2B4DDD2FF0D190006CCFD2 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					4B564F112FF124EA00D65130 = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
 				};
@@ -128,6 +189,7 @@
 			projectRoot = "";
 			targets = (
 				4B2B4DDD2FF0D190006CCFD2 /* Sample */,
+				4B564F112FF124EA00D65130 /* SampleOC */,
 			);
 		};
 /* End PBXProject section */
@@ -140,10 +202,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4B564F102FF124EA00D65130 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		4B2B4DDA2FF0D190006CCFD2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4B564F0E2FF124EA00D65130 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -175,7 +251,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_PRODUCT_BUNDLE_IDENTIFIER).swift";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "$(inherited)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -214,7 +290,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_PRODUCT_BUNDLE_IDENTIFIER).swift";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "$(inherited)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -356,6 +432,76 @@
 			};
 			name = Release;
 		};
+		4B564F2A2FF124EB00D65130 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "$(inherited)";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "$(inherited)";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SampleOC/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_PRODUCT_BUNDLE_IDENTIFIER).oc";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(inherited)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4B564F2B2FF124EB00D65130 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "$(inherited)";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "$(inherited)";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SampleOC/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_PRODUCT_BUNDLE_IDENTIFIER).oc";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(inherited)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -377,6 +523,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		4B564F292FF124EB00D65130 /* Build configuration list for PBXNativeTarget "SampleOC" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4B564F2A2FF124EB00D65130 /* Debug */,
+				4B564F2B2FF124EB00D65130 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -389,6 +544,11 @@
 /* Begin XCSwiftPackageProductDependency section */
 		4B2B4DF72FF0D1BE006CCFD2 /* OrientationTransitionKit */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = OrientationTransitionKit;
+		};
+		4B564FBA2FF1266D00D65130 /* OrientationTransitionKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4B2B4DF62FF0D1BE006CCFD2 /* XCLocalSwiftPackageReference "../../OrientationTransitionKit" */;
 			productName = OrientationTransitionKit;
 		};
 /* End XCSwiftPackageProductDependency section */

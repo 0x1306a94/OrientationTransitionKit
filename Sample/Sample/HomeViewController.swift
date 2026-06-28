@@ -1,0 +1,206 @@
+//
+//  HomeViewController.swift
+//  OrientationTransitionKitSample
+//
+//  Created by KK on 2026/6/28.
+//
+
+import OrientationTransitionKit
+import UIKit
+
+class HomeViewController: BaseViewController {
+    private let playerContainerView = UIView()
+    private let playerView = UIImageView()
+    private let buttonStackView = UIStackView()
+    private let landscapeButton = UIButton(configuration: .plain())
+    private let positionButton = UIButton(configuration: .plain())
+
+    private var playerContainerViewTopLayoutConstraint: NSLayoutConstraint!
+    private var playerContainerViewCenterLayoutConstraint: NSLayoutConstraint!
+
+    private var orientationTransitionCoordinator: TransitionCoordinator?
+    private var landscapeViewController: LandscapeViewController?
+    private var pendingExitFullscreenTask: (() -> Void)?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        playerContainerView.backgroundColor = .black
+        playerContainerView.translatesAutoresizingMaskIntoConstraints = false
+
+        playerView.backgroundColor = .orange
+//        playerView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        playerView.translatesAutoresizingMaskIntoConstraints = false
+
+        buttonStackView.translatesAutoresizingMaskIntoConstraints = false
+        buttonStackView.axis = .horizontal
+        buttonStackView.spacing = 20
+
+        var positionButtonConfiguration = UIButton.Configuration.filled()
+        positionButtonConfiguration.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10)
+        positionButtonConfiguration.cornerStyle = .capsule
+        positionButtonConfiguration.attributedTitle = AttributedString(
+            "顶部",
+            attributes: AttributeContainer([
+                .font: UIFont.systemFont(ofSize: 18, weight: .medium),
+            ])
+        )
+        positionButton.configuration = positionButtonConfiguration
+        positionButton.addTarget(self, action: #selector(positionButtonTapped(_:)), for: .touchUpInside)
+
+        var landscapeButtonConfiguration = UIButton.Configuration.filled()
+        landscapeButtonConfiguration.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10)
+        landscapeButtonConfiguration.cornerStyle = .capsule
+        landscapeButtonConfiguration.attributedTitle = AttributedString(
+            "全屏",
+            attributes: AttributeContainer([
+                .font: UIFont.systemFont(ofSize: 18, weight: .medium),
+            ])
+        )
+        landscapeButton.configuration = landscapeButtonConfiguration
+        landscapeButton.translatesAutoresizingMaskIntoConstraints = false
+        landscapeButton.addTarget(self, action: #selector(landscapeButtonTapped), for: .touchUpInside)
+
+        view.addSubview(playerContainerView)
+        playerContainerView.addSubview(playerView)
+        view.addSubview(buttonStackView)
+        buttonStackView.addArrangedSubview(positionButton)
+        buttonStackView.addArrangedSubview(landscapeButton)
+
+        playerContainerViewTopLayoutConstraint = playerContainerView.topAnchor.constraint(equalTo: view.topAnchor)
+        playerContainerViewCenterLayoutConstraint = playerContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -50)
+        NSLayoutConstraint.activate([
+            playerContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            playerContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            playerContainerViewCenterLayoutConstraint,
+            playerContainerView.heightAnchor.constraint(equalTo: playerContainerView.widthAnchor, multiplier: 3.0 / 4.0),
+
+            playerView.leadingAnchor.constraint(equalTo: playerContainerView.leadingAnchor),
+            playerView.trailingAnchor.constraint(equalTo: playerContainerView.trailingAnchor),
+            playerView.topAnchor.constraint(equalTo: playerContainerView.topAnchor),
+            playerView.bottomAnchor.constraint(equalTo: playerContainerView.bottomAnchor),
+
+            buttonStackView.topAnchor.constraint(equalTo: playerContainerView.bottomAnchor, constant: 30),
+            buttonStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+        ])
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+//        if playerView.superview === playerContainerView {
+//            playerView.frame = playerContainerView.bounds
+//        }
+    }
+
+    @objc private func positionButtonTapped(_ sender: UIButton) {
+        sender.isSelected.toggle()
+
+        var configuration = UIButton.Configuration.filled()
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10)
+        configuration.cornerStyle = .capsule
+        playerContainerViewCenterLayoutConstraint.isActive = false
+        playerContainerViewTopLayoutConstraint.isActive = false
+
+        if sender.isSelected {
+            configuration.attributedSubtitle = AttributedString(
+                "中心",
+                attributes: AttributeContainer([
+                    .font: UIFont.systemFont(ofSize: 18, weight: .medium),
+                ])
+            )
+            playerContainerViewTopLayoutConstraint.isActive = true
+        } else {
+            configuration.attributedSubtitle = AttributedString(
+                "顶部",
+                attributes: AttributeContainer([
+                    .font: UIFont.systemFont(ofSize: 18, weight: .medium),
+                ])
+            )
+            playerContainerViewCenterLayoutConstraint.isActive = true
+        }
+        sender.configuration = configuration
+
+        UIView.animate(withDuration: 0.25) {
+            self.view.layoutIfNeeded()
+        }
+    }
+
+    @objc private func landscapeButtonTapped() {
+        guard landscapeViewController == nil else {
+            return
+        }
+
+        let landscapeViewController = LandscapeViewController()
+        landscapeViewController.transitionContentView = playerView
+        landscapeViewController.didTapUserInfoHandler = { [weak self] viewController in
+            self?.pendingExitFullscreenTask = {
+                self?.showUserInfo()
+            }
+
+            viewController.dismiss(animated: true)
+        }
+
+        let animationProvider = DefaultTransitionAnimationProvider()
+        let transitionCoordinator = TransitionCoordinator(
+            fromContextProvider: self,
+            toContextProvider: landscapeViewController,
+            fromInterfaceOrientation: .portrait,
+            toInterfaceOrientation: .landscapeRight,
+            animationProvider: animationProvider
+        )
+
+        self.landscapeViewController = landscapeViewController
+        orientationTransitionCoordinator = transitionCoordinator
+
+        landscapeViewController.modalPresentationStyle = .fullScreen
+        landscapeViewController.transitioningDelegate = transitionCoordinator
+
+        present(landscapeViewController, animated: true)
+    }
+
+    private func showUserInfo() {
+        navigationController?.pushViewController(UserInfoViewController(), animated: true)
+    }
+}
+
+extension HomeViewController: TransitionFromContextProvider {
+    func transitionFromContextProviderViewController() -> UIViewController {
+        self
+    }
+
+    func transitionFromContextProviderTransitionFrame(in containerView: UIView) -> CGRect {
+        containerView.convert(playerContainerView.bounds, from: playerContainerView)
+    }
+
+    func transitionFromContextProviderPrepareTransitionView(_ transitionView: UIView) {
+        movePlayerView(to: transitionView)
+    }
+
+    func transitionFromContextProviderFinishTransitionView() {
+        movePlayerView(to: playerContainerView)
+    }
+
+    func transitionFromContextProviderTransitionDidExit(to contextProvider: TransitionToContextProvider) {
+        orientationTransitionCoordinator = nil
+        landscapeViewController = nil
+
+        pendingExitFullscreenTask?()
+        pendingExitFullscreenTask = nil
+    }
+
+    private func movePlayerView(to containerView: UIView) {
+        playerView.removeFromSuperview()
+        playerView.transform = .identity
+        playerView.frame = containerView.bounds
+        playerView.translatesAutoresizingMaskIntoConstraints = false
+//        playerView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        containerView.addSubview(playerView)
+        NSLayoutConstraint.activate([
+            playerView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            playerView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            playerView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            playerView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
+        ])
+    }
+}

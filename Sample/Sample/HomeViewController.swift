@@ -13,12 +13,14 @@ class HomeViewController: BaseViewController {
     private let playerView = UIImageView()
     private let buttonStackView = UIStackView()
     private let landscapeButton = UIButton(configuration: .plain())
+    private let systemRotationLandscapeButton = UIButton(configuration: .plain())
     private let positionButton = UIButton(configuration: .plain())
 
     private var playerContainerViewTopLayoutConstraint: NSLayoutConstraint!
     private var playerContainerViewCenterLayoutConstraint: NSLayoutConstraint!
 
     private var orientationTransitionCoordinator: TransitionCoordinator?
+    private var systemRotationTransitionCoordinator: SystemRotationTransitionCoordinator?
     private var landscapeViewController: LandscapeViewController?
     private var pendingExitFullscreenTask: (() -> Void)?
     private var shouldHideHomeIndicator = false
@@ -64,11 +66,25 @@ class HomeViewController: BaseViewController {
         landscapeButton.translatesAutoresizingMaskIntoConstraints = false
         landscapeButton.addTarget(self, action: #selector(landscapeButtonTapped), for: .touchUpInside)
 
+        var systemRotationLandscapeButtonConfiguration = UIButton.Configuration.filled()
+        systemRotationLandscapeButtonConfiguration.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10)
+        systemRotationLandscapeButtonConfiguration.cornerStyle = .capsule
+        systemRotationLandscapeButtonConfiguration.attributedTitle = AttributedString(
+            "全屏2",
+            attributes: AttributeContainer([
+                .font: UIFont.systemFont(ofSize: 18, weight: .medium),
+            ])
+        )
+        systemRotationLandscapeButton.configuration = systemRotationLandscapeButtonConfiguration
+        systemRotationLandscapeButton.translatesAutoresizingMaskIntoConstraints = false
+        systemRotationLandscapeButton.addTarget(self, action: #selector(systemRotationLandscapeButtonTapped), for: .touchUpInside)
+
         view.addSubview(playerContainerView)
         playerContainerView.addSubview(playerView)
         view.addSubview(buttonStackView)
         buttonStackView.addArrangedSubview(positionButton)
         buttonStackView.addArrangedSubview(landscapeButton)
+        buttonStackView.addArrangedSubview(systemRotationLandscapeButton)
 
         playerContainerViewTopLayoutConstraint = playerContainerView.topAnchor.constraint(equalTo: view.topAnchor)
         playerContainerViewCenterLayoutConstraint = playerContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -50)
@@ -156,7 +172,7 @@ class HomeViewController: BaseViewController {
             viewController.dismiss(animated: true)
         }
 
-        let animationProvider = DefaultTransitionAnimationProvider(duration: 2.5)
+        let animationProvider = DefaultTransitionAnimationProvider()
         let transitionCoordinator = TransitionCoordinator(
             fromContextProvider: self,
             toContextProvider: landscapeViewController,
@@ -172,6 +188,35 @@ class HomeViewController: BaseViewController {
         landscapeViewController.transitioningDelegate = transitionCoordinator
 
         present(landscapeViewController, animated: true)
+    }
+
+    @objc private func systemRotationLandscapeButtonTapped() {
+        guard landscapeViewController == nil else {
+            return
+        }
+
+        let landscapeViewController = LandscapeViewController()
+        landscapeViewController.transitionContentView = playerView
+        landscapeViewController.didTapCloseHandler = { [weak self] _ in
+            self?.systemRotationTransitionCoordinator?.dismiss()
+        }
+        landscapeViewController.didTapUserInfoHandler = { [weak self] _ in
+            self?.pendingExitFullscreenTask = {
+                self?.showUserInfo()
+            }
+            self?.systemRotationTransitionCoordinator?.dismiss()
+        }
+
+        let transitionCoordinator = SystemRotationTransitionCoordinator(
+            fromContextProvider: self,
+            toContextProvider: landscapeViewController,
+            fromInterfaceOrientation: .portrait,
+            toInterfaceOrientation: .landscapeRight
+        )
+
+        self.landscapeViewController = landscapeViewController
+        systemRotationTransitionCoordinator = transitionCoordinator
+        transitionCoordinator.present()
     }
 
     private func showUserInfo() {
@@ -209,6 +254,26 @@ extension HomeViewController: TransitionFromContextProvider {
         movePlayerView(to: playerContainerView)
     }
 
+    func transitionFromContextProviderMakePresentingSnapshotView(
+        _ contextProvider: TransitionFromContextProvider,
+        afterScreenUpdates: Bool
+    ) -> UIView? {
+        playerView.isHidden = true
+        defer {
+            playerView.isHidden = false
+        }
+
+        // snapshotView may reuse the previous render cache, so the temporary hidden playerView can still appear in it.
+        view.layoutIfNeeded()
+        let renderer = UIGraphicsImageRenderer(bounds: view.bounds)
+        let image = renderer.image { _ in
+            view.drawHierarchy(in: view.bounds, afterScreenUpdates: true)
+        }
+        let snapshotView = UIImageView(image: image)
+        snapshotView.frame = view.bounds
+        return snapshotView
+    }
+
     func transitionFromContextProviderTransitionWillEnter(_ contextProvider: TransitionFromContextProvider, to toContextProvider: TransitionToContextProvider) {
         setHomeIndicatorHidden(true)
     }
@@ -224,6 +289,7 @@ extension HomeViewController: TransitionFromContextProvider {
     func transitionFromContextProviderTransitionDidExit(_ contextProvider: TransitionFromContextProvider, to toContextProvider: TransitionToContextProvider) {
         setHomeIndicatorHidden(false)
         orientationTransitionCoordinator = nil
+        systemRotationTransitionCoordinator = nil
         landscapeViewController = nil
 
         pendingExitFullscreenTask?()

@@ -175,6 +175,13 @@
     [self movePlayerViewToContainerView:self.playerContainerView];
 }
 
+- (UIView *)transitionFromContextProviderMakePresentingSnapshotView:(id<OTKTransitionFromContextProvider>)contextProvider afterScreenUpdates:(BOOL)afterScreenUpdates {
+    self.playerView.hidden = YES;
+    UIView *snapshotView = [self.view snapshotViewAfterScreenUpdates:afterScreenUpdates];
+    self.playerView.hidden = NO;
+    return snapshotView;
+}
+
 - (void)transitionFromContextProviderTransitionWillEnter:(id<OTKTransitionFromContextProvider>)contextProvider to:(id<OTKTransitionToContextProvider>)toContextProvider {
     [self setHomeIndicatorHidden:YES];
 }

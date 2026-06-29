@@ -34,6 +34,15 @@ public protocol TransitionFromContextProvider: NSObjectProtocol {
     /// - Parameter contextProvider: The provider instance receiving this callback.
     func transitionFromContextProviderFinishTransitionView(_ contextProvider: TransitionFromContextProvider)
 
+    /// Returns a snapshot view for the portrait-side background during system rotation transitions.
+    /// - Parameters:
+    ///   - contextProvider: The provider instance receiving this callback.
+    ///   - afterScreenUpdates: Whether the snapshot should include pending screen updates.
+    @objc optional func transitionFromContextProviderMakePresentingSnapshotView(
+        _ contextProvider: TransitionFromContextProvider,
+        afterScreenUpdates: Bool
+    ) -> UIView?
+
     /// Called before entering the target fullscreen context.
     /// - Parameters:
     ///   - contextProvider: The provider instance receiving this callback.

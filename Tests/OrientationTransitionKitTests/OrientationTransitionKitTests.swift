@@ -57,6 +57,43 @@ import UIKit
 }
 
 @MainActor
+@Test func systemRotationTransitionCoordinatorKeepsInitialContextProvidersAndOrientations() {
+    let fromContextProvider = SpyFromContextProvider()
+    let toContextProvider = SpyToContextProvider()
+    let coordinator = SystemRotationTransitionCoordinator(
+        fromContextProvider: fromContextProvider,
+        toContextProvider: toContextProvider,
+        fromInterfaceOrientation: .portrait,
+        toInterfaceOrientation: .landscapeRight
+    )
+
+    #expect(coordinator.fromContextProvider === fromContextProvider)
+    #expect(coordinator.toContextProvider === toContextProvider)
+    #expect(coordinator.fromInterfaceOrientation == .portrait)
+    #expect(coordinator.toInterfaceOrientation == .landscapeRight)
+    #expect(coordinator.state == .idle)
+}
+
+@MainActor
+@Test func systemRotationTransitionCoordinatorUsesFromContextProviderSnapshotHook() {
+    let fromContextProvider = SpyFromContextProvider()
+    let toContextProvider = SpyToContextProvider()
+    let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+    window.rootViewController = fromContextProvider.transitionFromContextProviderViewController(fromContextProvider)
+    window.makeKeyAndVisible()
+    let coordinator = SystemRotationTransitionCoordinator(
+        fromContextProvider: fromContextProvider,
+        toContextProvider: toContextProvider,
+        fromInterfaceOrientation: .portrait,
+        toInterfaceOrientation: .landscapeRight
+    )
+
+    coordinator.present()
+
+    #expect(fromContextProvider.snapshotCallCount == 1)
+}
+
+@MainActor
 @Test func defaultTransitionAnimationProviderUsesCustomAnimatorFactory() {
     var factoryCallCount = 0
     let provider = DefaultTransitionAnimationProvider {
@@ -186,6 +223,7 @@ private final class SpyFromContextProvider: NSObject, TransitionFromContextProvi
     private(set) var alongsideTransitionView: UIView?
     private(set) var alongsideAnimator: UIViewImplicitlyAnimating?
     private(set) var didFinishTransitionView = false
+    private(set) var snapshotCallCount = 0
 
     func transitionFromContextProviderViewController(_ contextProvider: TransitionFromContextProvider) -> UIViewController {
         viewController
@@ -212,6 +250,14 @@ private final class SpyFromContextProvider: NSObject, TransitionFromContextProvi
 
     func transitionFromContextProviderFinishTransitionView(_ contextProvider: TransitionFromContextProvider) {
         didFinishTransitionView = true
+    }
+
+    func transitionFromContextProviderMakePresentingSnapshotView(
+        _ contextProvider: TransitionFromContextProvider,
+        afterScreenUpdates: Bool
+    ) -> UIView? {
+        snapshotCallCount += 1
+        return UIView()
     }
 }
 

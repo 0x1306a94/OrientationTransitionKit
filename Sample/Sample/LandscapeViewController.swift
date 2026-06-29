@@ -13,6 +13,7 @@ class LandscapeViewController: BaseViewController {
     private let closeButton = UIButton(type: .custom)
     private let userInfoButton = UIButton(type: .custom)
 
+    var didTapCloseHandler: ((LandscapeViewController) -> Void)?
     var didTapUserInfoHandler: ((LandscapeViewController) -> Void)?
     weak var transitionContentView: UIView?
     private var shouldHideHomeIndicator = false
@@ -82,7 +83,11 @@ class LandscapeViewController: BaseViewController {
     }
 
     @objc private func closeButtonTapped() {
-        dismiss(animated: true)
+        if let didTapCloseHandler {
+            didTapCloseHandler(self)
+        } else {
+            dismiss(animated: true)
+        }
     }
 
     @objc private func userInfoButtonTapped() {

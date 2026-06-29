@@ -20,7 +20,7 @@ xcodebuild -project Sample/Sample.xcodeproj -scheme SampleOC -destination 'platf
 
 ## 代码风格与命名约定
 
-Swift 使用 4 空格缩进，公开 API 显式标注访问级别，保持一个主要类型对应一个文件。协议方法命名需要语义完整并兼容 Objective-C，例如 `transitionFromContextProviderPrepareTransitionView(_:)`。
+Swift 使用 4 空格缩进，公开 API 显式标注访问级别，保持一个主要类型对应一个文件。协议方法命名需要语义完整并兼容 Objective-C，例如 `transitionFromContextProviderPrepareTransitionView(_:transitionView:)`。
 
 Objective-C 示例使用 ARC 风格和清晰属性命名。引用 Swift 暴露类型时以生成头为准，例如 `OTKTransitionCoordinator`。
 

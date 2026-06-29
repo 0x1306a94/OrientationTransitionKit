@@ -15,6 +15,7 @@ class LandscapeViewController: BaseViewController {
 
     var didTapUserInfoHandler: ((LandscapeViewController) -> Void)?
     weak var transitionContentView: UIView?
+    private var shouldHideHomeIndicator = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -76,6 +77,10 @@ class LandscapeViewController: BaseViewController {
         .landscapeRight
     }
 
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        shouldHideHomeIndicator
+    }
+
     @objc private func closeButtonTapped() {
         dismiss(animated: true)
     }
@@ -83,23 +88,44 @@ class LandscapeViewController: BaseViewController {
     @objc private func userInfoButtonTapped() {
         didTapUserInfoHandler?(self)
     }
+
+    private func setHomeIndicatorHidden(_ isHidden: Bool) {
+        shouldHideHomeIndicator = isHidden
+        setNeedsUpdateOfHomeIndicatorAutoHidden()
+    }
 }
 
 extension LandscapeViewController: TransitionToContextProvider {
-    func transitionToContextProviderViewController() -> UIViewController {
+    func transitionToContextProviderViewController(_ contextProvider: TransitionToContextProvider) -> UIViewController {
         self
     }
 
-    func transitionToContextProviderTransitionFrame(in containerView: UIView) -> CGRect {
+    func transitionToContextProviderTransitionFrame(_ contextProvider: TransitionToContextProvider, in containerView: UIView) -> CGRect {
         containerView.convert(playerContainerView.bounds, from: playerContainerView)
     }
 
-    func transitionToContextProviderPrepareTransitionView(_ transitionView: UIView) {
+    func transitionToContextProviderPrepareTransitionView(_ contextProvider: TransitionToContextProvider, transitionView: UIView) {
         moveTransitionContent(to: transitionView)
     }
 
-    func transitionToContextProviderFinishTransitionView() {
+    func transitionToContextProviderFinishTransitionView(_ contextProvider: TransitionToContextProvider) {
         moveTransitionContent(to: playerContainerView)
+    }
+
+    func transitionToContextProviderTransitionWillEnter(_ contextProvider: TransitionToContextProvider, from fromContextProvider: TransitionFromContextProvider) {
+        setHomeIndicatorHidden(true)
+    }
+
+    func transitionToContextProviderTransitionDidEnter(_ contextProvider: TransitionToContextProvider, from fromContextProvider: TransitionFromContextProvider) {
+        setHomeIndicatorHidden(true)
+    }
+
+    func transitionToContextProviderTransitionWillExit(_ contextProvider: TransitionToContextProvider, from fromContextProvider: TransitionFromContextProvider) {
+        setHomeIndicatorHidden(true)
+    }
+
+    func transitionToContextProviderTransitionDidExit(_ contextProvider: TransitionToContextProvider, from fromContextProvider: TransitionFromContextProvider) {
+        setHomeIndicatorHidden(false)
     }
 
     private func moveTransitionContent(to containerView: UIView) {

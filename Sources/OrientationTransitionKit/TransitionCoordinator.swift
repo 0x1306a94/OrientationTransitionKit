@@ -35,8 +35,8 @@ public final class TransitionCoordinator: NSObject {
         transitionContext: UIViewControllerContextTransitioning
     ) {
         let viewController = isPresenting
-            ? toContextProvider.transitionToContextProviderViewController()
-            : fromContextProvider.transitionFromContextProviderViewController()
+            ? toContextProvider.transitionToContextProviderViewController(toContextProvider)
+            : fromContextProvider.transitionFromContextProviderViewController(fromContextProvider)
         let windowScene = viewController.view.window?.windowScene ?? transitionContext.containerView.window?.windowScene
 
         waitForExpectedOrientation(
@@ -124,11 +124,11 @@ public final class TransitionCoordinator: NSObject {
 
     private func notifyDidFinishTransition(isPresenting: Bool) {
         if isPresenting {
-            toContextProvider.transitionToContextProviderTransitionDidEnter?(from: fromContextProvider)
-            fromContextProvider.transitionFromContextProviderTransitionDidEnter?(to: toContextProvider)
+            toContextProvider.transitionToContextProviderTransitionDidEnter?(toContextProvider, from: fromContextProvider)
+            fromContextProvider.transitionFromContextProviderTransitionDidEnter?(fromContextProvider, to: toContextProvider)
         } else {
-            fromContextProvider.transitionFromContextProviderTransitionDidExit?(to: toContextProvider)
-            toContextProvider.transitionToContextProviderTransitionDidExit?(from: fromContextProvider)
+            fromContextProvider.transitionFromContextProviderTransitionDidExit?(fromContextProvider, to: toContextProvider)
+            toContextProvider.transitionToContextProviderTransitionDidExit?(toContextProvider, from: fromContextProvider)
         }
     }
 

@@ -26,10 +26,10 @@ Docs/                               设计与实现说明
 
 ```swift
 final class HomeViewController: UIViewController, TransitionFromContextProvider {
-    func transitionFromContextProviderViewController() -> UIViewController { self }
-    func transitionFromContextProviderTransitionFrame(in containerView: UIView) -> CGRect { .zero }
-    func transitionFromContextProviderPrepareTransitionView(_ transitionView: UIView) {}
-    func transitionFromContextProviderFinishTransitionView() {}
+    func transitionFromContextProviderViewController(_ contextProvider: TransitionFromContextProvider) -> UIViewController { self }
+    func transitionFromContextProviderTransitionFrame(_ contextProvider: TransitionFromContextProvider, in containerView: UIView) -> CGRect { .zero }
+    func transitionFromContextProviderPrepareTransitionView(_ contextProvider: TransitionFromContextProvider, transitionView: UIView) {}
+    func transitionFromContextProviderFinishTransitionView(_ contextProvider: TransitionFromContextProvider) {}
 }
 ```
 
@@ -94,5 +94,4 @@ https://github.com/user-attachments/assets/f09f3883-a496-40f8-9624-686111af55eb
 - iOS 26.5.1
 
 https://github.com/user-attachments/assets/5c77585c-c665-4455-96f4-f9c7c3ddd9da
-
 

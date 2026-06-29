@@ -28,6 +28,7 @@ public final class DefaultTransitionAnimationProvider: NSObject, TransitionAnima
     }
 
     public func transitionAnimationProviderPresentAnimator(
+        _ animationProvider: TransitionAnimationProvider,
         fromContextProvider: TransitionFromContextProvider,
         toContextProvider: TransitionToContextProvider,
         fromInterfaceOrientation: UIInterfaceOrientation,
@@ -43,31 +44,30 @@ public final class DefaultTransitionAnimationProvider: NSObject, TransitionAnima
 
         let containerView = transitionContext.containerView
         toView.frame = transitionContext.finalFrame(for: toViewController)
-        if toView.superview !== containerView {
-            containerView.addSubview(toView)
-        }
+
+        containerView.addSubview(toView)
         toView.layoutIfNeeded()
 
-        let startFrame = fromContextProvider.transitionFromContextProviderTransitionFrame(in: containerView)
-        let targetFrame = toContextProvider.transitionToContextProviderTransitionFrame(in: containerView)
-        let transitionContainerView = transitionContainerView(frame: startFrame)
+        let startFrame = fromContextProvider.transitionFromContextProviderTransitionFrame(fromContextProvider, in: containerView)
+        let targetFrame = toContextProvider.transitionToContextProviderTransitionFrame(toContextProvider, in: containerView)
+        let transitionContainerView = transitionContainerView(frame: .zero)
         let rotationAngle = rotationAngle(
             from: fromInterfaceOrientation,
             to: toInterfaceOrientation
         )
 
-        toView.alpha = 0.01
+        toView.alpha = 0
         containerView.addSubview(transitionContainerView)
-        fromContextProvider.transitionFromContextProviderPrepareTransitionView(transitionContainerView)
+        apply(startFrame, to: transitionContainerView, rotationAngle: -rotationAngle)
+        fromContextProvider.transitionFromContextProviderPrepareTransitionView(fromContextProvider, transitionView: transitionContainerView)
         transitionContainerView.setNeedsLayout()
         transitionContainerView.layoutIfNeeded()
 
         let animator = makeAnimator {
-            toView.alpha = 1
-            self.apply(targetFrame, to: transitionContainerView, rotationAngle: rotationAngle)
+            self.apply(targetFrame, to: transitionContainerView, rotationAngle: 0)
         }
         animator.addCompletion? { _ in
-            toContextProvider.transitionToContextProviderFinishTransitionView()
+            toContextProvider.transitionToContextProviderFinishTransitionView(toContextProvider)
             toView.alpha = 1
             transitionContainerView.removeFromSuperview()
         }
@@ -75,6 +75,7 @@ public final class DefaultTransitionAnimationProvider: NSObject, TransitionAnima
     }
 
     public func transitionAnimationProviderDismissAnimator(
+        _ animationProvider: TransitionAnimationProvider,
         fromContextProvider: TransitionFromContextProvider,
         toContextProvider: TransitionToContextProvider,
         fromInterfaceOrientation: UIInterfaceOrientation,
@@ -95,25 +96,23 @@ public final class DefaultTransitionAnimationProvider: NSObject, TransitionAnima
         toView.layoutIfNeeded()
         fromView.layoutIfNeeded()
 
-        let startFrame = toContextProvider.transitionToContextProviderTransitionFrame(in: containerView)
-        let targetFrame = fromContextProvider.transitionFromContextProviderTransitionFrame(in: containerView)
-        let transitionContainerView = transitionContainerView(frame: startFrame)
+        let startFrame = toContextProvider.transitionToContextProviderTransitionFrame(toContextProvider, in: containerView)
+        let targetFrame = fromContextProvider.transitionFromContextProviderTransitionFrame(fromContextProvider, in: containerView)
+        let transitionContainerView = transitionContainerView(frame: .zero)
         let rotationAngle = rotationAngle(
             from: fromInterfaceOrientation,
             to: toInterfaceOrientation
         )
-
+        fromView.alpha = 0
         containerView.addSubview(transitionContainerView)
-        toContextProvider.transitionToContextProviderPrepareTransitionView(transitionContainerView)
         apply(startFrame, to: transitionContainerView, rotationAngle: rotationAngle)
+        toContextProvider.transitionToContextProviderPrepareTransitionView(toContextProvider, transitionView: transitionContainerView)
 
         let animator = makeAnimator {
-            fromView.alpha = 0
             self.apply(targetFrame, to: transitionContainerView, rotationAngle: 0)
         }
         animator.addCompletion? { _ in
-            fromContextProvider.transitionFromContextProviderFinishTransitionView()
-            fromView.alpha = 1
+            fromContextProvider.transitionFromContextProviderFinishTransitionView(fromContextProvider)
             transitionContainerView.removeFromSuperview()
         }
         return animator

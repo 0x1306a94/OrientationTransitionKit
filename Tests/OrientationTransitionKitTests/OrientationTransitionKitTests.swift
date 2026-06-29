@@ -16,9 +16,9 @@ import UIKit
     )
 
     let animator = coordinator.animationController(
-        forPresented: toContextProvider.transitionToContextProviderViewController(),
-        presenting: fromContextProvider.transitionFromContextProviderViewController(),
-        source: fromContextProvider.transitionFromContextProviderViewController()
+        forPresented: toContextProvider.transitionToContextProviderViewController(toContextProvider),
+        presenting: fromContextProvider.transitionFromContextProviderViewController(fromContextProvider),
+        source: fromContextProvider.transitionFromContextProviderViewController(fromContextProvider)
     )
 
     #expect(animator != nil)
@@ -38,9 +38,9 @@ import UIKit
     )
 
     _ = coordinator.animationController(
-        forPresented: toContextProvider.transitionToContextProviderViewController(),
-        presenting: fromContextProvider.transitionFromContextProviderViewController(),
-        source: fromContextProvider.transitionFromContextProviderViewController()
+        forPresented: toContextProvider.transitionToContextProviderViewController(toContextProvider),
+        presenting: fromContextProvider.transitionFromContextProviderViewController(fromContextProvider),
+        source: fromContextProvider.transitionFromContextProviderViewController(fromContextProvider)
     )
 
     #expect(coordinator.fromContextProvider === fromContextProvider)
@@ -66,6 +66,7 @@ import UIKit
     let transitionContext = FakeTransitionContext()
 
     _ = provider.transitionAnimationProviderPresentAnimator(
+        provider,
         fromContextProvider: SpyFromContextProvider(),
         toContextProvider: SpyToContextProvider(),
         fromInterfaceOrientation: .portrait,
@@ -77,7 +78,7 @@ import UIKit
 }
 
 @MainActor
-@Test func dismissAsksToContextProviderToPrepareLandscapeSizedTransitionView() {
+@Test func dismissAsksToContextProviderToPrepareSystemCompensatedTransitionView() {
     let fromContextProvider = SpyFromContextProvider()
     let toContextProvider = SpyToContextProvider()
     let provider = DefaultTransitionAnimationProvider()
@@ -86,6 +87,7 @@ import UIKit
     containerView.addSubview(transitionContext.fromView)
 
     _ = provider.transitionAnimationProviderDismissAnimator(
+        provider,
         fromContextProvider: fromContextProvider,
         toContextProvider: toContextProvider,
         fromInterfaceOrientation: .landscapeRight,
@@ -93,29 +95,69 @@ import UIKit
         transitionContext: transitionContext
     )
 
-    #expect(toContextProvider.preparedTransitionViewBoundsSize == CGSize(width: 844, height: 390))
+    #expect(toContextProvider.preparedTransitionViewBoundsSize == CGSize(width: 390, height: 844))
+    #expect(toContextProvider.preparedTransitionViewRotationAngle == -.pi / 2)
     #expect(fromContextProvider.didFinishTransitionView == false)
+}
+
+@MainActor
+@Test func presentKeepsSourceViewVisibleBehindTransitionView() {
+    let provider = DefaultTransitionAnimationProvider()
+    let transitionContext = FakeTransitionContext()
+    transitionContext.containerView.addSubview(transitionContext.fromView)
+
+    _ = provider.transitionAnimationProviderPresentAnimator(
+        provider,
+        fromContextProvider: SpyFromContextProvider(),
+        toContextProvider: SpyToContextProvider(),
+        fromInterfaceOrientation: .portrait,
+        toInterfaceOrientation: .landscapeRight,
+        transitionContext: transitionContext
+    )
+
+    #expect(transitionContext.fromView.alpha == 1)
+    #expect(transitionContext.toView.alpha == 0)
+}
+
+@MainActor
+@Test func dismissHidesSystemRotatingFromViewImmediately() {
+    let provider = DefaultTransitionAnimationProvider()
+    let transitionContext = FakeTransitionContext()
+    transitionContext.containerView.addSubview(transitionContext.fromView)
+
+    _ = provider.transitionAnimationProviderDismissAnimator(
+        provider,
+        fromContextProvider: SpyFromContextProvider(),
+        toContextProvider: SpyToContextProvider(),
+        fromInterfaceOrientation: .landscapeRight,
+        toInterfaceOrientation: .portrait,
+        transitionContext: transitionContext
+    )
+
+    #expect(transitionContext.fromView.alpha == 0)
 }
 
 @MainActor
 private final class SpyFromContextProvider: NSObject, TransitionFromContextProvider {
     private let viewController = UIViewController()
     private(set) var preparedTransitionViewBoundsSize: CGSize?
+    private(set) var preparedTransitionViewRotationAngle: CGFloat?
     private(set) var didFinishTransitionView = false
 
-    func transitionFromContextProviderViewController() -> UIViewController {
+    func transitionFromContextProviderViewController(_ contextProvider: TransitionFromContextProvider) -> UIViewController {
         viewController
     }
 
-    func transitionFromContextProviderTransitionFrame(in containerView: UIView) -> CGRect {
+    func transitionFromContextProviderTransitionFrame(_ contextProvider: TransitionFromContextProvider, in containerView: UIView) -> CGRect {
         CGRect(x: 12, y: 20, width: 320, height: 180)
     }
 
-    func transitionFromContextProviderPrepareTransitionView(_ transitionView: UIView) {
+    func transitionFromContextProviderPrepareTransitionView(_ contextProvider: TransitionFromContextProvider, transitionView: UIView) {
         preparedTransitionViewBoundsSize = transitionView.bounds.size
+        preparedTransitionViewRotationAngle = atan2(transitionView.transform.b, transitionView.transform.a)
     }
 
-    func transitionFromContextProviderFinishTransitionView() {
+    func transitionFromContextProviderFinishTransitionView(_ contextProvider: TransitionFromContextProvider) {
         didFinishTransitionView = true
     }
 }
@@ -124,21 +166,23 @@ private final class SpyFromContextProvider: NSObject, TransitionFromContextProvi
 private final class SpyToContextProvider: NSObject, TransitionToContextProvider {
     private let viewController = UIViewController()
     private(set) var preparedTransitionViewBoundsSize: CGSize?
+    private(set) var preparedTransitionViewRotationAngle: CGFloat?
     private(set) var didFinishTransitionView = false
 
-    func transitionToContextProviderViewController() -> UIViewController {
+    func transitionToContextProviderViewController(_ contextProvider: TransitionToContextProvider) -> UIViewController {
         viewController
     }
 
-    func transitionToContextProviderTransitionFrame(in containerView: UIView) -> CGRect {
+    func transitionToContextProviderTransitionFrame(_ contextProvider: TransitionToContextProvider, in containerView: UIView) -> CGRect {
         CGRect(x: 0, y: 0, width: 844, height: 390)
     }
 
-    func transitionToContextProviderPrepareTransitionView(_ transitionView: UIView) {
+    func transitionToContextProviderPrepareTransitionView(_ contextProvider: TransitionToContextProvider, transitionView: UIView) {
         preparedTransitionViewBoundsSize = transitionView.bounds.size
+        preparedTransitionViewRotationAngle = atan2(transitionView.transform.b, transitionView.transform.a)
     }
 
-    func transitionToContextProviderFinishTransitionView() {
+    func transitionToContextProviderFinishTransitionView(_ contextProvider: TransitionToContextProvider) {
         didFinishTransitionView = true
     }
 }
@@ -204,6 +248,7 @@ private final class FakeTransitionContext: NSObject, UIViewControllerContextTran
 @MainActor
 private final class SpyTransitionAnimationProvider: NSObject, TransitionAnimationProvider {
     func transitionAnimationProviderPresentAnimator(
+        _ animationProvider: TransitionAnimationProvider,
         fromContextProvider: TransitionFromContextProvider,
         toContextProvider: TransitionToContextProvider,
         fromInterfaceOrientation: UIInterfaceOrientation,
@@ -214,6 +259,7 @@ private final class SpyTransitionAnimationProvider: NSObject, TransitionAnimatio
     }
 
     func transitionAnimationProviderDismissAnimator(
+        _ animationProvider: TransitionAnimationProvider,
         fromContextProvider: TransitionFromContextProvider,
         toContextProvider: TransitionToContextProvider,
         fromInterfaceOrientation: UIInterfaceOrientation,

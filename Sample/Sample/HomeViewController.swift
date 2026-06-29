@@ -21,6 +21,7 @@ class HomeViewController: BaseViewController {
     private var orientationTransitionCoordinator: TransitionCoordinator?
     private var landscapeViewController: LandscapeViewController?
     private var pendingExitFullscreenTask: (() -> Void)?
+    private var shouldHideHomeIndicator = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -101,6 +102,10 @@ class HomeViewController: BaseViewController {
 //        }
     }
 
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        shouldHideHomeIndicator
+    }
+
     @objc private func positionButtonTapped(_ sender: UIButton) {
         sender.isSelected.toggle()
 
@@ -170,26 +175,44 @@ class HomeViewController: BaseViewController {
     private func showUserInfo() {
         navigationController?.pushViewController(UserInfoViewController(), animated: true)
     }
+
+    private func setHomeIndicatorHidden(_ isHidden: Bool) {
+        shouldHideHomeIndicator = isHidden
+        setNeedsUpdateOfHomeIndicatorAutoHidden()
+    }
 }
 
 extension HomeViewController: TransitionFromContextProvider {
-    func transitionFromContextProviderViewController() -> UIViewController {
+    func transitionFromContextProviderViewController(_ contextProvider: TransitionFromContextProvider) -> UIViewController {
         self
     }
 
-    func transitionFromContextProviderTransitionFrame(in containerView: UIView) -> CGRect {
+    func transitionFromContextProviderTransitionFrame(_ contextProvider: TransitionFromContextProvider, in containerView: UIView) -> CGRect {
         containerView.convert(playerContainerView.bounds, from: playerContainerView)
     }
 
-    func transitionFromContextProviderPrepareTransitionView(_ transitionView: UIView) {
+    func transitionFromContextProviderPrepareTransitionView(_ contextProvider: TransitionFromContextProvider, transitionView: UIView) {
         movePlayerView(to: transitionView)
     }
 
-    func transitionFromContextProviderFinishTransitionView() {
+    func transitionFromContextProviderFinishTransitionView(_ contextProvider: TransitionFromContextProvider) {
         movePlayerView(to: playerContainerView)
     }
 
-    func transitionFromContextProviderTransitionDidExit(to contextProvider: TransitionToContextProvider) {
+    func transitionFromContextProviderTransitionWillEnter(_ contextProvider: TransitionFromContextProvider, to toContextProvider: TransitionToContextProvider) {
+        setHomeIndicatorHidden(true)
+    }
+
+    func transitionFromContextProviderTransitionDidEnter(_ contextProvider: TransitionFromContextProvider, to toContextProvider: TransitionToContextProvider) {
+        setHomeIndicatorHidden(false)
+    }
+
+    func transitionFromContextProviderTransitionWillExit(_ contextProvider: TransitionFromContextProvider, to toContextProvider: TransitionToContextProvider) {
+        setHomeIndicatorHidden(true)
+    }
+
+    func transitionFromContextProviderTransitionDidExit(_ contextProvider: TransitionFromContextProvider, to toContextProvider: TransitionToContextProvider) {
+        setHomeIndicatorHidden(false)
         orientationTransitionCoordinator = nil
         landscapeViewController = nil
 

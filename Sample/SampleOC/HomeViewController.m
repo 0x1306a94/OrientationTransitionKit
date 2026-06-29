@@ -23,6 +23,7 @@
 @property (nonatomic, strong) OTKTransitionCoordinator *orientationTransitionCoordinator;
 @property (nonatomic, strong) LandscapeViewController *landscapeViewController;
 @property (nonatomic, copy) void (^pendingExitFullscreenTask)(void);
+@property (nonatomic, assign) BOOL shouldHideHomeIndicator;
 @end
 
 @implementation HomeViewController
@@ -93,6 +94,10 @@
     }
 }
 
+- (BOOL)prefersHomeIndicatorAutoHidden {
+    return self.shouldHideHomeIndicator;
+}
+
 - (void)positionButtonTapped:(UIButton *)sender {
     sender.selected = !sender.selected;
 
@@ -149,23 +154,41 @@
     [self.navigationController pushViewController:[UserInfoViewController new] animated:YES];
 }
 
-- (UIViewController *)transitionFromContextProviderViewController {
+- (void)setHomeIndicatorHidden:(BOOL)hidden {
+    self.shouldHideHomeIndicator = hidden;
+    [self setNeedsUpdateOfHomeIndicatorAutoHidden];
+}
+
+- (UIViewController *)transitionFromContextProviderViewController:(id<OTKTransitionFromContextProvider>)contextProvider {
     return self;
 }
 
-- (CGRect)transitionFromContextProviderTransitionFrameIn:(UIView *)containerView {
+- (CGRect)transitionFromContextProviderTransitionFrame:(id<OTKTransitionFromContextProvider>)contextProvider in:(UIView *)containerView {
     return [containerView convertRect:self.playerContainerView.bounds fromView:self.playerContainerView];
 }
 
-- (void)transitionFromContextProviderPrepareTransitionView:(UIView *)transitionView {
+- (void)transitionFromContextProviderPrepareTransitionView:(id<OTKTransitionFromContextProvider>)contextProvider transitionView:(UIView *)transitionView {
     [self movePlayerViewToContainerView:transitionView];
 }
 
-- (void)transitionFromContextProviderFinishTransitionView {
+- (void)transitionFromContextProviderFinishTransitionView:(id<OTKTransitionFromContextProvider>)contextProvider {
     [self movePlayerViewToContainerView:self.playerContainerView];
 }
 
-- (void)transitionFromContextProviderTransitionDidExitTo:(id<OTKTransitionToContextProvider>)contextProvider {
+- (void)transitionFromContextProviderTransitionWillEnter:(id<OTKTransitionFromContextProvider>)contextProvider to:(id<OTKTransitionToContextProvider>)toContextProvider {
+    [self setHomeIndicatorHidden:YES];
+}
+
+- (void)transitionFromContextProviderTransitionDidEnter:(id<OTKTransitionFromContextProvider>)contextProvider to:(id<OTKTransitionToContextProvider>)toContextProvider {
+    [self setHomeIndicatorHidden:NO];
+}
+
+- (void)transitionFromContextProviderTransitionWillExit:(id<OTKTransitionFromContextProvider>)contextProvider to:(id<OTKTransitionToContextProvider>)toContextProvider {
+    [self setHomeIndicatorHidden:YES];
+}
+
+- (void)transitionFromContextProviderTransitionDidExit:(id<OTKTransitionFromContextProvider>)contextProvider to:(id<OTKTransitionToContextProvider>)toContextProvider {
+    [self setHomeIndicatorHidden:NO];
     self.orientationTransitionCoordinator = nil;
     self.landscapeViewController = nil;
 

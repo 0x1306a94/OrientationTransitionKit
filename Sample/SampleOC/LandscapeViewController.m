@@ -13,6 +13,7 @@
 @property (nonatomic, strong) UIView *playerContainerView;
 @property (nonatomic, strong) UIButton *closeButton;
 @property (nonatomic, strong) UIButton *userInfoButton;
+@property (nonatomic, assign) BOOL shouldHideHomeIndicator;
 @end
 
 @implementation LandscapeViewController
@@ -80,6 +81,10 @@
     return UIInterfaceOrientationLandscapeRight;
 }
 
+- (BOOL)prefersHomeIndicatorAutoHidden {
+    return self.shouldHideHomeIndicator;
+}
+
 - (void)closeButtonTapped {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
@@ -90,20 +95,41 @@
     }
 }
 
-- (UIViewController *)transitionToContextProviderViewController {
+- (void)setHomeIndicatorHidden:(BOOL)hidden {
+    self.shouldHideHomeIndicator = hidden;
+    [self setNeedsUpdateOfHomeIndicatorAutoHidden];
+}
+
+- (UIViewController *)transitionToContextProviderViewController:(id<OTKTransitionToContextProvider>)contextProvider {
     return self;
 }
 
-- (CGRect)transitionToContextProviderTransitionFrameIn:(UIView *)containerView {
+- (CGRect)transitionToContextProviderTransitionFrame:(id<OTKTransitionToContextProvider>)contextProvider in:(UIView *)containerView {
     return [containerView convertRect:self.playerContainerView.bounds fromView:self.playerContainerView];
 }
 
-- (void)transitionToContextProviderPrepareTransitionView:(UIView *)transitionView {
+- (void)transitionToContextProviderPrepareTransitionView:(id<OTKTransitionToContextProvider>)contextProvider transitionView:(UIView *)transitionView {
     [self moveTransitionContentToContainerView:transitionView];
 }
 
-- (void)transitionToContextProviderFinishTransitionView {
+- (void)transitionToContextProviderFinishTransitionView:(id<OTKTransitionToContextProvider>)contextProvider {
     [self moveTransitionContentToContainerView:self.playerContainerView];
+}
+
+- (void)transitionToContextProviderTransitionWillEnter:(id<OTKTransitionToContextProvider>)contextProvider from:(id<OTKTransitionFromContextProvider>)fromContextProvider {
+    [self setHomeIndicatorHidden:YES];
+}
+
+- (void)transitionToContextProviderTransitionDidEnter:(id<OTKTransitionToContextProvider>)contextProvider from:(id<OTKTransitionFromContextProvider>)fromContextProvider {
+    [self setHomeIndicatorHidden:YES];
+}
+
+- (void)transitionToContextProviderTransitionWillExit:(id<OTKTransitionToContextProvider>)contextProvider from:(id<OTKTransitionFromContextProvider>)fromContextProvider {
+    [self setHomeIndicatorHidden:YES];
+}
+
+- (void)transitionToContextProviderTransitionDidExit:(id<OTKTransitionToContextProvider>)contextProvider from:(id<OTKTransitionFromContextProvider>)fromContextProvider {
+    [self setHomeIndicatorHidden:NO];
 }
 
 - (void)moveTransitionContentToContainerView:(UIView *)containerView {

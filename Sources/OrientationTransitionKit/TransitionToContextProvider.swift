@@ -3,13 +3,47 @@ import UIKit
 @MainActor
 @objc(OTKTransitionToContextProvider)
 public protocol TransitionToContextProvider: NSObjectProtocol {
-    func transitionToContextProviderViewController() -> UIViewController
-    func transitionToContextProviderTransitionFrame(in containerView: UIView) -> CGRect
-    func transitionToContextProviderPrepareTransitionView(_ transitionView: UIView)
-    func transitionToContextProviderFinishTransitionView()
+    /// Returns the fullscreen-side view controller that owns this provider.
+    /// - Parameter contextProvider: The provider instance receiving this callback.
+    func transitionToContextProviderViewController(_ contextProvider: TransitionToContextProvider) -> UIViewController
 
-    @objc optional func transitionToContextProviderTransitionWillEnter(from contextProvider: TransitionFromContextProvider)
-    @objc optional func transitionToContextProviderTransitionDidEnter(from contextProvider: TransitionFromContextProvider)
-    @objc optional func transitionToContextProviderTransitionWillExit(from contextProvider: TransitionFromContextProvider)
-    @objc optional func transitionToContextProviderTransitionDidExit(from contextProvider: TransitionFromContextProvider)
+    /// Returns the target frame for the transition view in the transition container.
+    /// - Parameters:
+    ///   - contextProvider: The provider instance receiving this callback.
+    ///   - containerView: The UIKit transition container view.
+    func transitionToContextProviderTransitionFrame(_ contextProvider: TransitionToContextProvider, in containerView: UIView) -> CGRect
+
+    /// Gives the provider a temporary transition view before the animation starts.
+    /// - Parameters:
+    ///   - contextProvider: The provider instance receiving this callback.
+    ///   - transitionView: The view that should host the moving transition content.
+    func transitionToContextProviderPrepareTransitionView(_ contextProvider: TransitionToContextProvider, transitionView: UIView)
+
+    /// Notifies the provider that its content should be restored to the final fullscreen container.
+    /// - Parameter contextProvider: The provider instance receiving this callback.
+    func transitionToContextProviderFinishTransitionView(_ contextProvider: TransitionToContextProvider)
+
+    /// Called before entering this fullscreen context.
+    /// - Parameters:
+    ///   - contextProvider: The provider instance receiving this callback.
+    ///   - fromContextProvider: The source portrait context provider.
+    @objc optional func transitionToContextProviderTransitionWillEnter(_ contextProvider: TransitionToContextProvider, from fromContextProvider: TransitionFromContextProvider)
+
+    /// Called after this fullscreen context has entered and orientation handling has completed.
+    /// - Parameters:
+    ///   - contextProvider: The provider instance receiving this callback.
+    ///   - fromContextProvider: The source portrait context provider.
+    @objc optional func transitionToContextProviderTransitionDidEnter(_ contextProvider: TransitionToContextProvider, from fromContextProvider: TransitionFromContextProvider)
+
+    /// Called before exiting this fullscreen context.
+    /// - Parameters:
+    ///   - contextProvider: The provider instance receiving this callback.
+    ///   - fromContextProvider: The source portrait context provider.
+    @objc optional func transitionToContextProviderTransitionWillExit(_ contextProvider: TransitionToContextProvider, from fromContextProvider: TransitionFromContextProvider)
+
+    /// Called after this fullscreen context has exited and orientation handling has completed.
+    /// - Parameters:
+    ///   - contextProvider: The provider instance receiving this callback.
+    ///   - fromContextProvider: The source portrait context provider.
+    @objc optional func transitionToContextProviderTransitionDidExit(_ contextProvider: TransitionToContextProvider, from fromContextProvider: TransitionFromContextProvider)
 }

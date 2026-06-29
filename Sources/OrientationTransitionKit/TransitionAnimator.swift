@@ -40,9 +40,10 @@ final class TransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning 
     ) {
         let animator: UIViewImplicitlyAnimating
         if isPresenting {
-            fromContextProvider.transitionFromContextProviderTransitionWillEnter?(to: toContextProvider)
-            toContextProvider.transitionToContextProviderTransitionWillEnter?(from: fromContextProvider)
+            fromContextProvider.transitionFromContextProviderTransitionWillEnter?(fromContextProvider, to: toContextProvider)
+            toContextProvider.transitionToContextProviderTransitionWillEnter?(toContextProvider, from: fromContextProvider)
             animator = animationProvider.transitionAnimationProviderPresentAnimator(
+                animationProvider,
                 fromContextProvider: fromContextProvider,
                 toContextProvider: toContextProvider,
                 fromInterfaceOrientation: fromInterfaceOrientation,
@@ -50,9 +51,10 @@ final class TransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning 
                 transitionContext: transitionContext
             )
         } else {
-            toContextProvider.transitionToContextProviderTransitionWillExit?(from: fromContextProvider)
-            fromContextProvider.transitionFromContextProviderTransitionWillExit?(to: toContextProvider)
+            toContextProvider.transitionToContextProviderTransitionWillExit?(toContextProvider, from: fromContextProvider)
+            fromContextProvider.transitionFromContextProviderTransitionWillExit?(fromContextProvider, to: toContextProvider)
             animator = animationProvider.transitionAnimationProviderDismissAnimator(
+                animationProvider,
                 fromContextProvider: fromContextProvider,
                 toContextProvider: toContextProvider,
                 fromInterfaceOrientation: fromInterfaceOrientation,

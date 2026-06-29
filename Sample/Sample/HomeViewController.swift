@@ -156,7 +156,7 @@ class HomeViewController: BaseViewController {
             viewController.dismiss(animated: true)
         }
 
-        let animationProvider = DefaultTransitionAnimationProvider()
+        let animationProvider = DefaultTransitionAnimationProvider(duration: 2.5)
         let transitionCoordinator = TransitionCoordinator(
             fromContextProvider: self,
             toContextProvider: landscapeViewController,

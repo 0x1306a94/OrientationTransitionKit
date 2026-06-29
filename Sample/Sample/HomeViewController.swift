@@ -83,6 +83,14 @@ class HomeViewController: BaseViewController {
             buttonStackView.topAnchor.constraint(equalTo: playerContainerView.bottomAnchor, constant: 30),
             buttonStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
         ])
+        
+        let testLabel = UILabel()
+        testLabel.font = UIFont.systemFont(ofSize: 40, weight: .medium)
+        testLabel.text = "Test"
+        playerView.addSubview(testLabel)
+        testLabel.translatesAutoresizingMaskIntoConstraints = false
+        testLabel.centerXAnchor.constraint(equalTo: playerView.centerXAnchor).isActive = true
+        testLabel.centerYAnchor.constraint(equalTo: playerView.centerYAnchor).isActive = true
     }
 
     override func viewDidLayoutSubviews() {

@@ -75,6 +75,14 @@
         [_buttonStackView.topAnchor constraintEqualToAnchor:_playerContainerView.bottomAnchor constant:30],
         [_buttonStackView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
     ]];
+
+    UILabel *testLabel = [UILabel new];
+    testLabel.font = [UIFont systemFontOfSize:30 weight:UIFontWeightMedium];
+    testLabel.text = @"Test";
+    testLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [_playerView addSubview:testLabel];
+    [testLabel.centerXAnchor constraintEqualToAnchor:_playerView.centerXAnchor].active = YES;
+    [testLabel.centerYAnchor constraintEqualToAnchor:_playerView.centerYAnchor].active = YES;
 }
 
 - (void)viewDidLayoutSubviews {

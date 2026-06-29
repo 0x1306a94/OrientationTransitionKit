@@ -62,7 +62,6 @@ landscapeViewController.transitioningDelegate = coordinator
 ```xcconfig
 BASE_PRODUCT_BUNDLE_IDENTIFIER = com.example.OrientationTransitionKitSample
 DEVELOPMENT_TEAM = YOURTEAMID
-DEVELOPMENT_TEAM = YOURTEAMID
 CODE_SIGN_IDENTITY = Apple Development
 CODE_SIGN_IDENTITY[config=Release] = Apple Distribution
 PROVISIONING_PROFILE_SPECIFIER = match Development com.example.*

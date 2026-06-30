@@ -108,6 +108,14 @@ extension LandscapeViewController: TransitionToContextProvider {
         moveTransitionContent(to: transitionView)
     }
 
+    func transitionToContextProviderAnimateAlongsideTransition(_ contextProvider: TransitionToContextProvider, transitionView: UIView, animator: UIViewImplicitlyAnimating) {
+        transitionView.clipsToBounds = true
+        transitionView.layer.cornerRadius = 0
+        animator.addAnimations? {
+            transitionView.layer.cornerRadius = 20
+        }
+    }
+
     func transitionToContextProviderFinishTransitionView(_ contextProvider: TransitionToContextProvider) {
         moveTransitionContent(to: playerContainerView)
     }

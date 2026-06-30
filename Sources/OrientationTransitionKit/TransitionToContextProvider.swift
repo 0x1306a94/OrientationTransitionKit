@@ -19,6 +19,17 @@ public protocol TransitionToContextProvider: NSObjectProtocol {
     ///   - transitionView: The view that should host the moving transition content.
     func transitionToContextProviderPrepareTransitionView(_ contextProvider: TransitionToContextProvider, transitionView: UIView)
 
+    /// Gives the provider the temporary transition view and animator so it can animate alongside the transition.
+    /// - Parameters:
+    ///   - contextProvider: The provider instance receiving this callback.
+    ///   - transitionView: The view that hosts the moving transition content.
+    ///   - animator: The animator used by the transition.
+    @objc optional func transitionToContextProviderAnimateAlongsideTransition(
+        _ contextProvider: TransitionToContextProvider,
+        transitionView: UIView,
+        animator: UIViewImplicitlyAnimating
+    )
+
     /// Notifies the provider that its content should be restored to the final fullscreen container.
     /// - Parameter contextProvider: The provider instance receiving this callback.
     func transitionToContextProviderFinishTransitionView(_ contextProvider: TransitionToContextProvider)

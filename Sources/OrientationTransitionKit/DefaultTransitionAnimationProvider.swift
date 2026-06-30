@@ -66,6 +66,11 @@ public final class DefaultTransitionAnimationProvider: NSObject, TransitionAnima
         let animator = makeAnimator {
             self.apply(targetFrame, to: transitionContainerView, rotationAngle: 0)
         }
+        fromContextProvider.transitionFromContextProviderAnimateAlongsideTransition?(
+            fromContextProvider,
+            transitionView: transitionContainerView,
+            animator: animator
+        )
         animator.addCompletion? { _ in
             toContextProvider.transitionToContextProviderFinishTransitionView(toContextProvider)
             toView.alpha = 1
@@ -111,6 +116,11 @@ public final class DefaultTransitionAnimationProvider: NSObject, TransitionAnima
         let animator = makeAnimator {
             self.apply(targetFrame, to: transitionContainerView, rotationAngle: 0)
         }
+        toContextProvider.transitionToContextProviderAnimateAlongsideTransition?(
+            toContextProvider,
+            transitionView: transitionContainerView,
+            animator: animator
+        )
         animator.addCompletion? { _ in
             fromContextProvider.transitionFromContextProviderFinishTransitionView(fromContextProvider)
             transitionContainerView.removeFromSuperview()

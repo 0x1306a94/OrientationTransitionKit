@@ -101,6 +101,46 @@ import UIKit
 }
 
 @MainActor
+@Test func presentAsksFromContextProviderToAnimateAlongsideTransition() {
+    let fromContextProvider = SpyFromContextProvider()
+    let provider = DefaultTransitionAnimationProvider()
+    let transitionContext = FakeTransitionContext()
+
+    let animator = provider.transitionAnimationProviderPresentAnimator(
+        provider,
+        fromContextProvider: fromContextProvider,
+        toContextProvider: SpyToContextProvider(),
+        fromInterfaceOrientation: .portrait,
+        toInterfaceOrientation: .landscapeRight,
+        transitionContext: transitionContext
+    )
+
+    #expect(fromContextProvider.alongsideTransitionView === fromContextProvider.preparedTransitionView)
+    #expect(fromContextProvider.alongsideAnimator === animator)
+}
+
+@MainActor
+@Test func dismissAsksToContextProviderToAnimateAlongsideTransition() {
+    let toContextProvider = SpyToContextProvider()
+    let provider = DefaultTransitionAnimationProvider()
+    let transitionContext = FakeTransitionContext()
+    let containerView = transitionContext.containerView
+    containerView.addSubview(transitionContext.fromView)
+
+    let animator = provider.transitionAnimationProviderDismissAnimator(
+        provider,
+        fromContextProvider: SpyFromContextProvider(),
+        toContextProvider: toContextProvider,
+        fromInterfaceOrientation: .landscapeRight,
+        toInterfaceOrientation: .portrait,
+        transitionContext: transitionContext
+    )
+
+    #expect(toContextProvider.alongsideTransitionView === toContextProvider.preparedTransitionView)
+    #expect(toContextProvider.alongsideAnimator === animator)
+}
+
+@MainActor
 @Test func presentKeepsSourceViewVisibleBehindTransitionView() {
     let provider = DefaultTransitionAnimationProvider()
     let transitionContext = FakeTransitionContext()
@@ -140,8 +180,11 @@ import UIKit
 @MainActor
 private final class SpyFromContextProvider: NSObject, TransitionFromContextProvider {
     private let viewController = UIViewController()
+    private(set) var preparedTransitionView: UIView?
     private(set) var preparedTransitionViewBoundsSize: CGSize?
     private(set) var preparedTransitionViewRotationAngle: CGFloat?
+    private(set) var alongsideTransitionView: UIView?
+    private(set) var alongsideAnimator: UIViewImplicitlyAnimating?
     private(set) var didFinishTransitionView = false
 
     func transitionFromContextProviderViewController(_ contextProvider: TransitionFromContextProvider) -> UIViewController {
@@ -153,8 +196,18 @@ private final class SpyFromContextProvider: NSObject, TransitionFromContextProvi
     }
 
     func transitionFromContextProviderPrepareTransitionView(_ contextProvider: TransitionFromContextProvider, transitionView: UIView) {
+        preparedTransitionView = transitionView
         preparedTransitionViewBoundsSize = transitionView.bounds.size
         preparedTransitionViewRotationAngle = atan2(transitionView.transform.b, transitionView.transform.a)
+    }
+
+    func transitionFromContextProviderAnimateAlongsideTransition(
+        _ contextProvider: TransitionFromContextProvider,
+        transitionView: UIView,
+        animator: UIViewImplicitlyAnimating
+    ) {
+        alongsideTransitionView = transitionView
+        alongsideAnimator = animator
     }
 
     func transitionFromContextProviderFinishTransitionView(_ contextProvider: TransitionFromContextProvider) {
@@ -165,8 +218,11 @@ private final class SpyFromContextProvider: NSObject, TransitionFromContextProvi
 @MainActor
 private final class SpyToContextProvider: NSObject, TransitionToContextProvider {
     private let viewController = UIViewController()
+    private(set) var preparedTransitionView: UIView?
     private(set) var preparedTransitionViewBoundsSize: CGSize?
     private(set) var preparedTransitionViewRotationAngle: CGFloat?
+    private(set) var alongsideTransitionView: UIView?
+    private(set) var alongsideAnimator: UIViewImplicitlyAnimating?
     private(set) var didFinishTransitionView = false
 
     func transitionToContextProviderViewController(_ contextProvider: TransitionToContextProvider) -> UIViewController {
@@ -178,8 +234,18 @@ private final class SpyToContextProvider: NSObject, TransitionToContextProvider 
     }
 
     func transitionToContextProviderPrepareTransitionView(_ contextProvider: TransitionToContextProvider, transitionView: UIView) {
+        preparedTransitionView = transitionView
         preparedTransitionViewBoundsSize = transitionView.bounds.size
         preparedTransitionViewRotationAngle = atan2(transitionView.transform.b, transitionView.transform.a)
+    }
+
+    func transitionToContextProviderAnimateAlongsideTransition(
+        _ contextProvider: TransitionToContextProvider,
+        transitionView: UIView,
+        animator: UIViewImplicitlyAnimating
+    ) {
+        alongsideTransitionView = transitionView
+        alongsideAnimator = animator
     }
 
     func transitionToContextProviderFinishTransitionView(_ contextProvider: TransitionToContextProvider) {

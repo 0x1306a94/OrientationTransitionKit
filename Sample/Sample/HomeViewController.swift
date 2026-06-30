@@ -27,6 +27,8 @@ class HomeViewController: BaseViewController {
         super.viewDidLoad()
 
         playerContainerView.backgroundColor = .black
+        playerContainerView.clipsToBounds = true
+        playerContainerView.layer.cornerRadius = 20
         playerContainerView.translatesAutoresizingMaskIntoConstraints = false
 
         playerView.backgroundColor = .orange
@@ -84,7 +86,7 @@ class HomeViewController: BaseViewController {
             buttonStackView.topAnchor.constraint(equalTo: playerContainerView.bottomAnchor, constant: 30),
             buttonStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
         ])
-        
+
         let testLabel = UILabel()
         testLabel.font = UIFont.systemFont(ofSize: 40, weight: .medium)
         testLabel.text = "Test"
@@ -193,6 +195,14 @@ extension HomeViewController: TransitionFromContextProvider {
 
     func transitionFromContextProviderPrepareTransitionView(_ contextProvider: TransitionFromContextProvider, transitionView: UIView) {
         movePlayerView(to: transitionView)
+    }
+
+    func transitionFromContextProviderAnimateAlongsideTransition(_ contextProvider: TransitionFromContextProvider, transitionView: UIView, animator: UIViewImplicitlyAnimating) {
+        transitionView.clipsToBounds = true
+        transitionView.layer.cornerRadius = 20
+        animator.addAnimations? {
+            transitionView.layer.cornerRadius = 0
+        }
     }
 
     func transitionFromContextProviderFinishTransitionView(_ contextProvider: TransitionFromContextProvider) {

@@ -56,6 +56,13 @@ public final class TransitionCoordinator: NSObject {
         pendingTransitionIsPresenting = isPresenting
 
         let phase = transitionPhase(isPresenting: isPresenting)
+        // 前后方向相同时转场不涉及旋转，无需等待
+        if fromInterfaceOrientation == toInterfaceOrientation {
+            Logger.transitionCoordinator.debug("[\(phase)] Same from and to orientation, finish immediately")
+            notifyDidFinishTransition(isPresenting: isPresenting, windowScene: windowScene)
+            return
+        }
+
         guard let windowScene else {
             Logger.transitionCoordinator.notice("[\(phase)] Window scene not found, finish immediately")
             notifyDidFinishTransition(isPresenting: isPresenting, windowScene: nil)

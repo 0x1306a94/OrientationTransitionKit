@@ -9,12 +9,19 @@ public final class TransitionCoordinator: NSObject {
     public let toContextProvider: TransitionToContextProvider
     public let fromInterfaceOrientation: UIInterfaceOrientation
     public let toInterfaceOrientation: UIInterfaceOrientation
+    /// Decides whether the transition rotates between `fromInterfaceOrientation` and `toInterfaceOrientation`.
+    /// Return `false` in environments that ignore `supportedInterfaceOrientations` (such as iPad or the inner display
+    /// of a foldable device) to keep the scene's current orientation during the transition.
+    /// Treated as `true` when `nil` or when the window scene is unavailable.
+    public var shouldRotateHandler: ((UIWindowScene) -> Bool)?
 
     private let animationProvider: TransitionAnimationProvider
     private weak var observedWindowScene: UIWindowScene?
     private var pendingTransitionIsPresenting = false
     private var sceneObservation: NSKeyValueObservation?
     private var fallbackWorkItem: DispatchWorkItem?
+    private var resolvedFromInterfaceOrientation: UIInterfaceOrientation
+    private var resolvedToInterfaceOrientation: UIInterfaceOrientation
 
     public init(
         fromContextProvider: TransitionFromContextProvider,
@@ -28,6 +35,8 @@ public final class TransitionCoordinator: NSObject {
         self.fromInterfaceOrientation = fromInterfaceOrientation
         self.toInterfaceOrientation = toInterfaceOrientation
         self.animationProvider = animationProvider
+        resolvedFromInterfaceOrientation = fromInterfaceOrientation
+        resolvedToInterfaceOrientation = toInterfaceOrientation
         super.init()
     }
 
@@ -56,8 +65,8 @@ public final class TransitionCoordinator: NSObject {
         pendingTransitionIsPresenting = isPresenting
 
         let phase = transitionPhase(isPresenting: isPresenting)
-        // 前后方向相同时转场不涉及旋转，无需等待
-        if fromInterfaceOrientation == toInterfaceOrientation {
+        // No rotation is involved when both orientations match, so there is nothing to wait for
+        if resolvedFromInterfaceOrientation == resolvedToInterfaceOrientation {
             Logger.transitionCoordinator.debug("[\(phase)] Same from and to orientation, finish immediately")
             notifyDidFinishTransition(isPresenting: isPresenting, windowScene: windowScene)
             return
@@ -112,7 +121,8 @@ public final class TransitionCoordinator: NSObject {
             }
         }
 
-        // iPhone Duo 内屏、iPad 等大屏环境不受 supportedInterfaceOrientations 约束，系统不会旋转，超时后直接结束
+        // Large-screen environments such as the iPhone Duo inner display and iPad ignore supportedInterfaceOrientations,
+        // so the system never rotates; finish after a timeout
         let fallbackWorkItem = DispatchWorkItem { [weak self] in
             guard let self, let observedWindowScene else {
                 return
@@ -206,38 +216,62 @@ public final class TransitionCoordinator: NSObject {
     }
 
     private func expectedInterfaceOrientation(isPresenting: Bool) -> UIInterfaceOrientation {
-        isPresenting ? toInterfaceOrientation : fromInterfaceOrientation
+        isPresenting ? resolvedToInterfaceOrientation : resolvedFromInterfaceOrientation
+    }
+
+    private func resolveInterfaceOrientations(isPresenting: Bool, windowScene: UIWindowScene?) {
+        let shouldRotate = windowScene.map { shouldRotateHandler?($0) ?? true } ?? true
+        let currentOrientation = windowScene.map { currentInterfaceOrientation(windowScene: $0) } ?? .unknown
+        (resolvedFromInterfaceOrientation, resolvedToInterfaceOrientation) = Self.resolvedInterfaceOrientations(
+            fromInterfaceOrientation: fromInterfaceOrientation,
+            toInterfaceOrientation: toInterfaceOrientation,
+            currentInterfaceOrientation: currentOrientation,
+            shouldRotate: shouldRotate,
+        )
+        Logger.transitionCoordinator.debug(
+            "[\(self.transitionPhase(isPresenting: isPresenting))] Resolve orientations, shouldRotate: \(shouldRotate), from: \(self.resolvedFromInterfaceOrientation.logDescription), to: \(self.resolvedToInterfaceOrientation.logDescription)",
+        )
+    }
+
+    static func resolvedInterfaceOrientations(
+        fromInterfaceOrientation: UIInterfaceOrientation,
+        toInterfaceOrientation: UIInterfaceOrientation,
+        currentInterfaceOrientation: UIInterfaceOrientation,
+        shouldRotate: Bool,
+    ) -> (from: UIInterfaceOrientation, to: UIInterfaceOrientation) {
+        guard !shouldRotate, currentInterfaceOrientation != .unknown else {
+            return (fromInterfaceOrientation, toInterfaceOrientation)
+        }
+        return (currentInterfaceOrientation, currentInterfaceOrientation)
+    }
+
+    private func makeAnimator(isPresenting: Bool) -> TransitionAnimator {
+        TransitionAnimator(
+            isPresenting: isPresenting,
+            fromContextProvider: fromContextProvider,
+            toContextProvider: toContextProvider,
+            fromInterfaceOrientation: resolvedFromInterfaceOrientation,
+            toInterfaceOrientation: resolvedToInterfaceOrientation,
+            animationProvider: animationProvider,
+            transitionCoordinator: self,
+        )
     }
 }
 
 extension TransitionCoordinator: UIViewControllerTransitioningDelegate {
     public func animationController(
         forPresented _: UIViewController,
-        presenting _: UIViewController,
+        presenting: UIViewController,
         source _: UIViewController,
     ) -> UIViewControllerAnimatedTransitioning? {
-        TransitionAnimator(
-            isPresenting: true,
-            fromContextProvider: fromContextProvider,
-            toContextProvider: toContextProvider,
-            fromInterfaceOrientation: fromInterfaceOrientation,
-            toInterfaceOrientation: toInterfaceOrientation,
-            animationProvider: animationProvider,
-            transitionCoordinator: self,
-        )
+        resolveInterfaceOrientations(isPresenting: true, windowScene: presenting.view.window?.windowScene)
+        return makeAnimator(isPresenting: true)
     }
 
     public func animationController(
-        forDismissed _: UIViewController,
+        forDismissed dismissed: UIViewController,
     ) -> UIViewControllerAnimatedTransitioning? {
-        TransitionAnimator(
-            isPresenting: false,
-            fromContextProvider: fromContextProvider,
-            toContextProvider: toContextProvider,
-            fromInterfaceOrientation: fromInterfaceOrientation,
-            toInterfaceOrientation: toInterfaceOrientation,
-            animationProvider: animationProvider,
-            transitionCoordinator: self,
-        )
+        resolveInterfaceOrientations(isPresenting: false, windowScene: dismissed.view.window?.windowScene)
+        return makeAnimator(isPresenting: false)
     }
 }

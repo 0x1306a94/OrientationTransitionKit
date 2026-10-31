@@ -167,6 +167,11 @@ class HomeViewController: BaseViewController {
             toInterfaceOrientation: .landscapeRight,
             animationProvider: animationProvider
         )
+        // 示例判断：regular/regular（iPad、折叠设备内屏）不受 supportedInterfaceOrientations 约束，保持当前方向
+        transitionCoordinator.shouldRotateHandler = { windowScene in
+            let traitCollection = windowScene.traitCollection
+            return !(traitCollection.horizontalSizeClass == .regular && traitCollection.verticalSizeClass == .regular)
+        }
 
         self.landscapeViewController = landscapeViewController
         orientationTransitionCoordinator = transitionCoordinator

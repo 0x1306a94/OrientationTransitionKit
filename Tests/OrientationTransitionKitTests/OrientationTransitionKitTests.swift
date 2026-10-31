@@ -50,6 +50,45 @@ import UIKit
 }
 
 @MainActor
+@Test func coordinatorKeepsConfiguredOrientationsWhenRotating() {
+    let orientations = TransitionCoordinator.resolvedInterfaceOrientations(
+        fromInterfaceOrientation: .portrait,
+        toInterfaceOrientation: .landscapeRight,
+        currentInterfaceOrientation: .landscapeLeft,
+        shouldRotate: true
+    )
+
+    #expect(orientations.from == .portrait)
+    #expect(orientations.to == .landscapeRight)
+}
+
+@MainActor
+@Test func coordinatorUsesCurrentOrientationWhenNotRotating() {
+    let orientations = TransitionCoordinator.resolvedInterfaceOrientations(
+        fromInterfaceOrientation: .portrait,
+        toInterfaceOrientation: .landscapeRight,
+        currentInterfaceOrientation: .landscapeLeft,
+        shouldRotate: false
+    )
+
+    #expect(orientations.from == .landscapeLeft)
+    #expect(orientations.to == .landscapeLeft)
+}
+
+@MainActor
+@Test func coordinatorKeepsConfiguredOrientationsWhenCurrentOrientationUnknown() {
+    let orientations = TransitionCoordinator.resolvedInterfaceOrientations(
+        fromInterfaceOrientation: .portrait,
+        toInterfaceOrientation: .landscapeRight,
+        currentInterfaceOrientation: .unknown,
+        shouldRotate: false
+    )
+
+    #expect(orientations.from == .portrait)
+    #expect(orientations.to == .landscapeRight)
+}
+
+@MainActor
 @Test func defaultTransitionAnimationProviderConformsToAnimationProvider() {
     let provider: TransitionAnimationProvider = DefaultTransitionAnimationProvider()
 

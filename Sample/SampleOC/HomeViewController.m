@@ -143,6 +143,11 @@
 
     OTKDefaultTransitionAnimationProvider *animationProvider = [[OTKDefaultTransitionAnimationProvider alloc] initWithDuration:0.25];
     OTKTransitionCoordinator *transitionCoordinator = [[OTKTransitionCoordinator alloc] initFromContextProvider:self toContextProvider:landscapeViewController fromInterfaceOrientation:UIInterfaceOrientationPortrait toInterfaceOrientation:UIInterfaceOrientationLandscapeRight animationProvider:animationProvider];
+    // 示例判断：regular/regular（iPad、折叠设备内屏）不受 supportedInterfaceOrientations 约束，保持当前方向
+    transitionCoordinator.shouldRotateHandler = ^BOOL(UIWindowScene *windowScene) {
+        UITraitCollection *traitCollection = windowScene.traitCollection;
+        return !(traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular);
+    };
 
     self.landscapeViewController = landscapeViewController;
     self.orientationTransitionCoordinator = transitionCoordinator;

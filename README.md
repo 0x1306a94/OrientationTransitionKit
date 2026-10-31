@@ -1,28 +1,30 @@
 # OrientationTransitionKit
 
-`OrientationTransitionKit` 是一个 iOS Swift Package，用于实现竖屏页面与横屏页面之间的自定义方向转场。它提供一组上下文协议、转场协调器和默认视频式旋转放大/缩小动画，适合播放器全屏场景。
+English | [简体中文](Docs/README_zh.md)
 
-## 特性
+`OrientationTransitionKit` is an iOS Swift Package for custom orientation transitions between a portrait page and a landscape page. It provides a set of context protocols, a transition coordinator, and a default video-style rotate-and-scale animation, which suits full-screen video players.
 
-- 支持从竖屏容器旋转放大进入横屏容器，并反向退出。
-- 转场内容由业务方在回调中移动到临时转场容器，适合复用同一个播放器 view。
-- 支持 Swift 与 Objective-C 调用。
-- iOS 16+ 使用 `UIWindowScene.effectiveGeometry` 判断实际界面方向。
-- `DefaultTransitionAnimationProvider` 支持自定义 `UIViewImplicitlyAnimating`，可定制动画曲线。
+## Features
 
-## 目录结构
+- Rotates and scales from a portrait container into a landscape container, and back on exit.
+- The transition content is moved into a temporary transition container by your callbacks, so the same player view can be reused.
+- Works from both Swift and Objective-C.
+- On iOS 16+, uses `UIWindowScene.effectiveGeometry` to read the actual interface orientation.
+- `DefaultTransitionAnimationProvider` accepts a custom `UIViewImplicitlyAnimating`, so the animation curve can be customized.
+
+## Directory Structure
 
 ```text
-Sources/OrientationTransitionKit/   核心库源码
-Tests/OrientationTransitionKitTests/ 包测试
-Sample/Sample/                      Swift 示例
-Sample/SampleOC/                    Objective-C 示例
-Docs/                               设计与实现说明
+Sources/OrientationTransitionKit/   Library source
+Tests/OrientationTransitionKitTests/ Package tests
+Sample/Sample/                      Swift sample
+Sample/SampleOC/                    Objective-C sample
+Docs/                               Design and implementation notes
 ```
 
-## 基本用法
+## Basic Usage
 
-实现转场两端的上下文协议：
+Implement the context protocols on both ends of the transition:
 
 ```swift
 final class HomeViewController: UIViewController, TransitionFromContextProvider {
@@ -33,7 +35,7 @@ final class HomeViewController: UIViewController, TransitionFromContextProvider 
 }
 ```
 
-创建并持有 `TransitionCoordinator`：
+Create and retain a `TransitionCoordinator`:
 
 ```swift
 let animationProvider = DefaultTransitionAnimationProvider(duration: 0.25, curve: .easeInOut)
@@ -44,20 +46,50 @@ let coordinator = TransitionCoordinator(
     toInterfaceOrientation: .landscapeRight,
     animationProvider: animationProvider
 )
+landscapeViewController.modalPresentationStyle = .fullScreen
 landscapeViewController.transitioningDelegate = coordinator
 ```
 
-`TransitionCoordinator` 需要被强持有，直到转场结束。
+Keep a strong reference to the `TransitionCoordinator` until the transition finishes.
 
-## 示例工程签名配置
+The presented view controller must explicitly set `modalPresentationStyle = .fullScreen` (the default `.automatic` does not work). Only `.fullScreen` removes the presenting view and lets the system rotate the interface to the presented view controller's `supportedInterfaceOrientations`. Styles such as `.overFullScreen` and `.custom` keep the presenting orientation and break the transition. Using any other style triggers an assertion in Debug builds.
 
-示例工程通过 `Sample/Configuration/Config.xcconfig` 提供默认签名配置，并在末尾使用：
+## iPad and Foldable Devices
+
+On resizable environments such as iPad and the inner display of iPhone Duo, the system ignores the page's `supportedInterfaceOrientations` and the interface always follows the physical device orientation, so it never rotates to landscape. In these environments, go full screen in the current orientation and only scale.
+
+Use `shouldRotateHandler` to decide whether a transition rotates. It is called at the start of every present and dismiss, so folding or unfolding the device while in full screen is handled based on the environment at exit time:
+
+- Return `true`: rotate between `fromInterfaceOrientation` and `toInterfaceOrientation`.
+- Return `false`: both ends use the scene's current orientation, no rotation happens, and `DidEnter` / `DidExit` are called as soon as the transition ends.
+- When the handler is not set or the window scene is unavailable, the transition rotates.
+
+```swift
+coordinator.shouldRotateHandler = { windowScene in
+    let traitCollection = windowScene.traitCollection
+    // Example: keep the current orientation for regular/regular (iPad, foldable inner display)
+    return !(traitCollection.horizontalSizeClass == .regular && traitCollection.verticalSizeClass == .regular)
+}
+```
+
+```objc
+coordinator.shouldRotateHandler = ^BOOL(UIWindowScene *windowScene) {
+    UITraitCollection *traitCollection = windowScene.traitCollection;
+    return !(traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular);
+};
+```
+
+The size class check above is only an example; verify it on your target devices. Without rotation, the full-screen page is shown at any size and orientation, so its layout must adapt.
+
+## Sample Signing Configuration
+
+The sample project provides default signing settings in `Sample/Configuration/Config.xcconfig`, which ends with:
 
 ```xcconfig
 #include? "Developer.xcconfig"
 ```
 
-`#include?` 表示可选包含。仓库可以保留一份通用默认值，开发者可在 `Sample/Configuration/Developer.xcconfig` 中覆盖本机签名信息，例如：
+`#include?` is an optional include. The repository keeps shared defaults, and developers can override local signing settings in `Sample/Configuration/Developer.xcconfig`, for example:
 
 ```xcconfig
 BASE_PRODUCT_BUNDLE_IDENTIFIER = com.example.OrientationTransitionKitSample
@@ -68,9 +100,9 @@ PROVISIONING_PROFILE_SPECIFIER = match Development com.example.*
 PROVISIONING_PROFILE_SPECIFIER[config=Release] = match AdHoc com.example.*
 ```
 
-Swift 示例的 bundle id 会拼接为 `$(BASE_PRODUCT_BUNDLE_IDENTIFIER).swift`，Objective-C 示例会拼接为 `$(BASE_PRODUCT_BUNDLE_IDENTIFIER).oc`。如果只做模拟器构建，也可以继续在命令中传入 `CODE_SIGNING_ALLOWED=NO`。
+The Swift sample's bundle id becomes `$(BASE_PRODUCT_BUNDLE_IDENTIFIER).swift` and the Objective-C sample's becomes `$(BASE_PRODUCT_BUNDLE_IDENTIFIER).oc`. For simulator-only builds, you can still pass `CODE_SIGNING_ALLOWED=NO` on the command line.
 
-## 验证命令
+## Verification Commands
 
 ```sh
 xcodebuild test -scheme OrientationTransitionKit -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
@@ -78,9 +110,9 @@ xcodebuild -project Sample/Sample.xcodeproj -scheme Sample -destination 'platfor
 xcodebuild -project Sample/Sample.xcodeproj -scheme SampleOC -destination 'platform=iOS Simulator,name=iPhone 17 Pro' CODE_SIGNING_ALLOWED=NO build
 ```
 
-## 更多文档
+## More Docs
 
-- [iOS 16+ 方向监听说明](Docs/iOS16OrientationObservation.md)
+- [iOS 16+ orientation observation notes (Chinese)](Docs/iOS16OrientationObservation.md)
 
 ## Demo Preview
 - iOS 15.0
@@ -94,4 +126,3 @@ https://github.com/user-attachments/assets/f09f3883-a496-40f8-9624-686111af55eb
 - iOS 26.5.1
 
 https://github.com/user-attachments/assets/5c77585c-c665-4455-96f4-f9c7c3ddd9da
-

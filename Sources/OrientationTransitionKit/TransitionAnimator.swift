@@ -1,3 +1,4 @@
+import OSLog
 import UIKit
 
 @MainActor
@@ -38,6 +39,10 @@ final class TransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning 
     func animateTransition(
         using transitionContext: UIViewControllerContextTransitioning
     ) {
+        Logger.transitionAnimator.debug(
+            "[\(self.isPresenting ? "present" : "dismiss")] Animate transition, from: \(self.fromInterfaceOrientation.logDescription), to: \(self.toInterfaceOrientation.logDescription), container: \(transitionContext.containerView.bounds.debugDescription)",
+        )
+
         let animator: UIViewImplicitlyAnimating
         if isPresenting {
             fromContextProvider.transitionFromContextProviderTransitionWillEnter?(fromContextProvider, to: toContextProvider)
@@ -81,6 +86,7 @@ final class TransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning 
             addCompletion(completion)
         }
         animator.startAnimation()
+        Logger.transitionAnimator.debug("[\(self.isPresenting ? "present" : "dismiss")] Start animation")
     }
 
     private static func finishTransition(
@@ -91,14 +97,24 @@ final class TransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning 
         toContextProvider: TransitionToContextProvider,
         transitionCoordinator: TransitionCoordinator?
     ) {
+        let phase = isPresenting ? "present" : "dismiss"
         let success = finalPosition == .end && !transitionContext.transitionWasCancelled
+        Logger.transitionAnimator.debug(
+            "[\(phase)] Animation finished, position: \(finalPosition.logDescription), cancelled: \(transitionContext.transitionWasCancelled), success: \(success)",
+        )
         transitionContext.completeTransition(success)
 
         guard success else {
+            Logger.transitionAnimator.notice("[\(phase)] Transition not completed, skip lifecycle")
             return
         }
 
-        transitionCoordinator?.finishTransitionLifecycle(
+        guard let transitionCoordinator else {
+            Logger.transitionAnimator.notice("[\(phase)] Transition coordinator released, skip lifecycle")
+            return
+        }
+
+        transitionCoordinator.finishTransitionLifecycle(
             isPresenting: isPresenting,
             transitionContext: transitionContext
         )

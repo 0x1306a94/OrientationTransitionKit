@@ -58,7 +58,7 @@ public final class TransitionCoordinator: NSObject {
         let phase = transitionPhase(isPresenting: isPresenting)
         guard let windowScene else {
             Logger.transitionCoordinator.notice("[\(phase)] Window scene not found, finish immediately")
-            notifyDidFinishTransition(isPresenting: isPresenting)
+            notifyDidFinishTransition(isPresenting: isPresenting, windowScene: nil)
             return
         }
 
@@ -68,7 +68,7 @@ public final class TransitionCoordinator: NSObject {
 
         if isExpectedOrientation(windowScene: windowScene, isPresenting: isPresenting) {
             Logger.transitionCoordinator.debug("[\(phase)] Already in expected orientation")
-            notifyDidFinishTransition(isPresenting: isPresenting)
+            notifyDidFinishTransition(isPresenting: isPresenting, windowScene: windowScene)
             return
         }
 
@@ -80,7 +80,7 @@ public final class TransitionCoordinator: NSObject {
 
         if isExpectedOrientation(windowScene: windowScene, isPresenting: isPresenting) {
             Logger.transitionCoordinator.debug("[\(phase)] Reached expected orientation after orientation update request")
-            notifyDidFinishTransition(isPresenting: isPresenting)
+            notifyDidFinishTransition(isPresenting: isPresenting, windowScene: windowScene)
             return
         }
 
@@ -93,19 +93,19 @@ public final class TransitionCoordinator: NSObject {
         observedWindowScene = windowScene
         if #available(iOS 16.0, *) {
             sceneObservation = windowScene.observe(\.effectiveGeometry, options: [.new]) { [weak self] _, _ in
-                Task { @MainActor in
-                    self?.notifyDidFinishIfExpectedOrientation()
+                MainActor.assumeIsolated {
+                    self?.handleWindowSceneChange()
                 }
             }
         } else {
             sceneObservation = windowScene.observe(\.interfaceOrientation, options: [.new]) { [weak self] _, _ in
-                Task { @MainActor in
-                    self?.notifyDidFinishIfExpectedOrientation()
+                MainActor.assumeIsolated {
+                    self?.handleWindowSceneChange()
                 }
             }
         }
 
-        // 内屏、iPad 等大屏环境不受 supportedInterfaceOrientations 约束，系统不会旋转，超时后直接结束
+        // iPhone Duo 内屏、iPad 等大屏环境不受 supportedInterfaceOrientations 约束，系统不会旋转，超时后直接结束
         let fallbackWorkItem = DispatchWorkItem { [weak self] in
             guard let self, let observedWindowScene else {
                 return
@@ -131,6 +131,15 @@ public final class TransitionCoordinator: NSObject {
         fallbackWorkItem = nil
     }
 
+    private func handleWindowSceneChange() {
+        if let observedWindowScene {
+            Logger.transitionCoordinator.debug(
+                "Window scene changed, current: \(self.currentInterfaceOrientation(windowScene: observedWindowScene).logDescription)",
+            )
+        }
+        notifyDidFinishIfExpectedOrientation()
+    }
+
     private func notifyDidFinishIfExpectedOrientation() {
         guard let observedWindowScene else {
             return
@@ -149,16 +158,19 @@ public final class TransitionCoordinator: NSObject {
     }
 
     private func finishPendingTransition() {
-        guard observedWindowScene != nil else {
+        guard let observedWindowScene else {
             return
         }
 
         stopObservingWindowScene()
-        notifyDidFinishTransition(isPresenting: pendingTransitionIsPresenting)
+        notifyDidFinishTransition(isPresenting: pendingTransitionIsPresenting, windowScene: observedWindowScene)
     }
 
-    private func notifyDidFinishTransition(isPresenting: Bool) {
-        Logger.transitionCoordinator.debug("[\(self.transitionPhase(isPresenting: isPresenting))] Notify did \(isPresenting ? "enter" : "exit")")
+    private func notifyDidFinishTransition(isPresenting: Bool, windowScene: UIWindowScene?) {
+        let currentOrientation = windowScene.map { currentInterfaceOrientation(windowScene: $0).logDescription } ?? "nil"
+        Logger.transitionCoordinator.debug(
+            "[\(self.transitionPhase(isPresenting: isPresenting))] Notify did \(isPresenting ? "enter" : "exit"), current: \(currentOrientation)",
+        )
         if isPresenting {
             toContextProvider.transitionToContextProviderTransitionDidEnter?(toContextProvider, from: fromContextProvider)
             fromContextProvider.transitionFromContextProviderTransitionDidEnter?(fromContextProvider, to: toContextProvider)

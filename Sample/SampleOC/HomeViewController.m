@@ -67,11 +67,14 @@
 
     _playerContainerViewTopLayoutConstraint = [_playerContainerView.topAnchor constraintEqualToAnchor:self.view.topAnchor];
     _playerContainerViewCenterLayoutConstraint = [_playerContainerView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor constant:-50];
+    NSLayoutConstraint *playerContainerViewMaxHeightConstraint = [_playerContainerView.heightAnchor constraintEqualToConstant:400];
+    playerContainerViewMaxHeightConstraint.priority = UILayoutPriorityDefaultHigh;
     [NSLayoutConstraint activateConstraints:@[
         [_playerContainerView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
         [_playerContainerView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
         _playerContainerViewCenterLayoutConstraint,
-        [_playerContainerView.heightAnchor constraintEqualToAnchor:_playerContainerView.widthAnchor multiplier:3.0 / 4.0],
+        [_playerContainerView.heightAnchor constraintLessThanOrEqualToAnchor:_playerContainerView.widthAnchor multiplier:3.0 / 4.0],
+        playerContainerViewMaxHeightConstraint,
 
         [_buttonStackView.topAnchor constraintEqualToAnchor:_playerContainerView.bottomAnchor constant:30],
         [_buttonStackView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],

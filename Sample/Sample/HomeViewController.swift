@@ -72,11 +72,14 @@ class HomeViewController: BaseViewController {
 
         playerContainerViewTopLayoutConstraint = playerContainerView.topAnchor.constraint(equalTo: view.topAnchor)
         playerContainerViewCenterLayoutConstraint = playerContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -50)
+        let playerContainerViewMaxHeightConstraint = playerContainerView.heightAnchor.constraint(equalToConstant: 400)
+        playerContainerViewMaxHeightConstraint.priority = .defaultHigh
         NSLayoutConstraint.activate([
             playerContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             playerContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             playerContainerViewCenterLayoutConstraint,
-            playerContainerView.heightAnchor.constraint(equalTo: playerContainerView.widthAnchor, multiplier: 3.0 / 4.0),
+            playerContainerView.heightAnchor.constraint(lessThanOrEqualTo: playerContainerView.widthAnchor, multiplier: 3.0 / 4.0),
+            playerContainerViewMaxHeightConstraint,
 
             playerView.leadingAnchor.constraint(equalTo: playerContainerView.leadingAnchor),
             playerView.trailingAnchor.constraint(equalTo: playerContainerView.trailingAnchor),

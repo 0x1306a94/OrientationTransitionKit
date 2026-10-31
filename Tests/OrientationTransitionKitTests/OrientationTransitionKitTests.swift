@@ -256,7 +256,11 @@ private final class SpyFromContextProvider: NSObject, TransitionFromContextProvi
 
 @MainActor
 private final class SpyToContextProvider: NSObject, TransitionToContextProvider {
-    private let viewController = UIViewController()
+    private let viewController: UIViewController = {
+        let viewController = UIViewController()
+        viewController.modalPresentationStyle = .fullScreen
+        return viewController
+    }()
     private(set) var preparedTransitionView: UIView?
     private(set) var preparedTransitionViewBoundsSize: CGSize?
     private(set) var preparedTransitionViewRotationAngle: CGFloat?

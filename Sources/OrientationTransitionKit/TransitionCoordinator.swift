@@ -1,6 +1,11 @@
 import OSLog
 import UIKit
 
+/// Coordinates an orientation-changing transition between two view controllers.
+///
+/// The presented view controller must use `UIModalPresentationStyle.fullScreen`. Only full-screen presentations
+/// remove the presenting view and let the system rotate the interface to the presented view controller's
+/// `supportedInterfaceOrientations`; other styles keep the presenting orientation and break the transition.
 @MainActor
 @objc(OTKTransitionCoordinator)
 @objcMembers
@@ -260,10 +265,16 @@ public final class TransitionCoordinator: NSObject {
 
 extension TransitionCoordinator: UIViewControllerTransitioningDelegate {
     public func animationController(
-        forPresented _: UIViewController,
+        forPresented presented: UIViewController,
         presenting: UIViewController,
         source _: UIViewController,
     ) -> UIViewControllerAnimatedTransitioning? {
+        if presented.modalPresentationStyle != .fullScreen {
+            Logger.transitionCoordinator.fault(
+                "Only UIModalPresentationStyle.fullScreen is supported, got rawValue: \(presented.modalPresentationStyle.rawValue)",
+            )
+            assertionFailure("TransitionCoordinator only supports UIModalPresentationStyle.fullScreen")
+        }
         resolveInterfaceOrientations(isPresenting: true, windowScene: presenting.view.window?.windowScene)
         return makeAnimator(isPresenting: true)
     }
